@@ -1,0 +1,50 @@
+{
+  "name": "object-evaluator",
+  "version": "1.0.0",
+  "description": "Tests objects for true/false with logical and comparison operators using a builder pattern.",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "gulp",
+    "test": "mocha --require ts-node/register test/*.spec.ts"
+  },
+  "files": [
+    "dist"
+  ],
+  "browserslist": [
+    "defaults",
+    "not IE 11",
+    "not IE_Mob 11",
+    "maintained node versions"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wootapa/wa-object-evaluator.git"
+  },
+  "keywords": [],
+  "author": "Andreas Petersson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wootapa/wa-object-evaluator/issues"
+  },
+  "homepage": "https://github.com/wootapa/wa-object-evaluator#readme",
+  "devDependencies": {
+    "@babel/core": "^7.8.6",
+    "@babel/preset-env": "^7.8.6",
+    "@types/chai": "^4.2.9",
+    "@types/mocha": "^7.0.1",
+    "babelify": "^10.0.0",
+    "browserify": "^16.5.0",
+    "chai": "^4.2.0",
+    "del": "^5.1.0",
+    "gulp": "^4.0.2",
+    "gulp-sourcemaps": "^2.6.5",
+    "gulp-typescript": "^6.0.0-alpha.1",
+    "gulp-uglify": "^3.0.2",
+    "mocha": "^7.1.0",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.8.3",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
+  }
+}
