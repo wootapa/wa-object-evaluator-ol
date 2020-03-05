@@ -10,9 +10,11 @@ const score = {
 describe("getters", () => {
     it("should call object and comparison functions to resolve values", () => {
         const result = Builder.create()
+            // mean should be greater than lowest score
             .gt('mean', () => Math.min(...Object.values(score)))
             .done()
             .evaluate(score, (prop) => {
+                // score contains no mean property, so we calculate it
                 if (prop == 'mean') {
                     const allScores = Object.values(score);
                     return allScores.reduce((total, score) => total + score, 0) / allScores.length;

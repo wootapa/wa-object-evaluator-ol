@@ -42,6 +42,16 @@ describe("or", () => {
 
         expect(result).true;
     });
+    it("should equal fname but not lname but will short-circuit", () => {
+        const result = Builder.create()
+            .or()
+            .eq('fname', person.fname)
+            .eq('idontexistandwontbeevaluated', 'ok')
+            .done()
+            .evaluate(person);
+
+        expect(result).true;
+    });
 });
 
 describe("not", () => {
