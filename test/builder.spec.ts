@@ -1,0 +1,37 @@
+import { expect } from 'chai';
+import { Builder } from '../src/main';
+
+const person = {
+    age: 20,
+    weight: 30,
+    height: 180
+};
+
+describe("builder", () => {
+    const builder1 = Builder.and()
+        .eq('age', 20)
+        .or()
+        .any('weight', [20, 30, 40])
+        .done();
+
+    const builder2 = Builder.fromJson(builder1.toJson());
+
+    it("builder and json-builder evaluates same", () => {
+        const result1 = builder1.evaluate(person);
+        const result2 = builder2.evaluate(person);
+        expect(result1).eq(result2);
+    });
+    it("builder and json-builder same json", () => {
+        const result1 = JSON.stringify(builder1.toJson());
+        const result2 = JSON.stringify(builder2.toJson());
+        expect(result1).eq(result2);
+    });
+    it("addBuilder should evaluate all operators", () => {
+        const builder3 = Builder.and()
+            .eq('height', person.height - 1)
+            .done();
+        
+        const result = builder3.addBuilder(builder1).done().evaluate(person);
+        expect(result).false;
+    });
+});
