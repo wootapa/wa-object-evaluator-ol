@@ -1,40 +1,71 @@
-import { IEvaluatable, ValueOrGetter, ObjectOrDict, IValueGetter, ValueResolver } from ".";
+import { Primitive, IJsonDump, ValueOrGetter, IEvaluatable, ObjectOrDict, IValueGetter } from "./wa-contracts";
+import { ValueResolver } from "./wa-util";
 
 interface IComparisonOpts { }
 interface ILikeOptions extends IComparisonOpts {
     matchCase: boolean
 }
 
-export abstract class Comparison implements IEvaluatable {
-    constructor(
-        private _key: string,
-        private _value: ValueOrGetter,
-        private _opts?: IComparisonOpts) { }
+export abstract class KeyValue {
+    protected _key: string;
+    protected _value: Primitive;
+
+    get key() {
+        return this._key;
+    }
+
+    get value() {
+        return this._value;
+    }
+
+    constructor(key: string, value: ValueOrGetter) {
+        this._key = key;
+        this._value = ValueResolver.resolveCompareValue(this._key, value);
+    }
+};
+
+export abstract class Comparison extends KeyValue implements IEvaluatable {
+    private _opts?: IComparisonOpts;
+
+    constructor(key: string, value: ValueOrGetter, opts?: IComparisonOpts) {
+        super(key, value);
+        this._opts = opts;
+    }
+
+    static fromJson(json: any) {
+        return new ComparisonEquals(json.key, json.value, json.opts);
+    }
+
+    toJson(): IJsonDump {
+        return {
+            type: this.constructor.name,
+            ctorArgs: [this._key, this._value, this._opts]
+        };
+    }
 
     evaluate(obj: ObjectOrDict, getter?: IValueGetter): boolean {
         // Get object and compare values
         let objValue = ValueResolver.resolveObjectValue(this._key, obj, getter);
-        let cmpValue = ValueResolver.resolveCompareValue(this._key, this._value);
 
         if (this instanceof ComparisonEquals) {
-            return objValue === cmpValue;
+            return objValue === this._value;
         }
         if (this instanceof ComparisonGreaterThan) {
-            return objValue > cmpValue;
+            return objValue > this._value;
         }
         if (this instanceof ComparisonGreaterThanEquals) {
-            return objValue >= cmpValue;
+            return objValue >= this._value;
         }
         if (this instanceof ComparisonLessThan) {
-            return objValue < cmpValue;
+            return objValue < this._value;
         }
         if (this instanceof ComparisonLessThanEquals) {
-            return objValue <= cmpValue;
+            return objValue <= this._value;
         }
         if (this instanceof ComparisonLike) {
             const opts = this._opts as ILikeOptions;
             let a = (objValue as string)?.toString();
-            let b = (cmpValue as string)?.toString();
+            let b = (this._value as string)?.toString();
             if (!opts.matchCase) {
                 a = a?.toLowerCase();
                 b = b?.toLowerCase();

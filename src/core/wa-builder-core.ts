@@ -1,36 +1,60 @@
 import { LogicalAnd, LogicalOr, LogicalNot, Logical } from "./wa-logical";
-import { IValueGetter, ObjectOrDict, ValueOrGetter, Filter } from "./wa-contracts";
-import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison } from "./wa-comparison";
+import { Walker } from "./wa-util";
+import { IValueGetter, ObjectOrDict, ValueOrGetter, IDictionary, ClassDict, IJsonDump } from "./wa-contracts";
+import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue } from "./wa-comparison";
 
 export interface IBuilder { }
-export abstract class BuilderBase<T extends BuilderBase<T>> implements IBuilder, IComparison<T> {
+export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements IBuilder, IComparison<T> {
+    // Root logical operator. Always an AND.
     protected _logical: Logical;
+    // The instance we return from builder
     protected _this: T;
+    // Dict with class constructors. Used when creating from a json dump.
+    protected _clsDict: ClassDict = {
+        LogicalAnd,
+        LogicalOr,
+        LogicalNot,
+        ComparisonEquals,
+        ComparisonGreaterThan,
+        ComparisonGreaterThanEquals,
+        ComparisonLessThan,
+        ComparisonLessThanEquals,
+        ComparisonLike
+    };
 
-    // Provided by subclass so we know its type
-    protected abstract getThisPointer(): T;
+    // Provided by subclass so we can return the correct type
+    protected abstract getBuilder(): T;
+    // Provided by subclass so we know how to create unknown operators
+    protected abstract getClassDict(): ClassDict;
 
     constructor() {
-        this._this = this.getThisPointer();
+        this._this = this.getBuilder();
         this._logical = new LogicalAnd(this._this)
+        // Merge base and implementation classmaps
+        this._clsDict = { ...this._clsDict, ...this._this.getClassDict() };
     }
 
-    // Static factory
-    static create<T extends BuilderBase<T>>(this: { new(): T }) {
+    // Static constructors
+    static create<T extends BuilderCoreBase<T>>(this: { new(): T }) {
         return new this();
     }
-
-    // Helper
-    protected _add(filter: Filter) {
-        return this._logical.add(filter);
+    static fromJson<T extends BuilderCoreBase<T>>(this: { new(): T }, json: IJsonDump) {
+        const builder = new this();
+        builder._logical = Logical.fromJson(json, builder._clsDict, builder);
+        return builder;
     }
 
     // Builder
+    toJson = () => this._logical.toJson();
+    evaluate = (obj: ObjectOrDict, getter?: IValueGetter) => this._logical.evaluate(obj, getter);
+
+    // Destroys all operators except root
     clear(): T {
         this._logical = new LogicalAnd(this);
         return this._this;
     };
 
+    // Moves to root logical
     done(): T {
         while (this._logical.getParent() !== this._this) {
             this.up();
@@ -38,6 +62,7 @@ export abstract class BuilderBase<T extends BuilderBase<T>> implements IBuilder,
         return this._this;
     };
 
+    // Moves to parent logical, or builder itself if at root level.
     up(): T {
         if (this._logical.getParent() === this._this) {
             return this._this;
@@ -46,12 +71,24 @@ export abstract class BuilderBase<T extends BuilderBase<T>> implements IBuilder,
         return this._this;
     };
 
-    // Evaluate
-    evaluate(obj: ObjectOrDict, getter?: IValueGetter): boolean {
-        return this._logical.evaluate(obj, getter);
-    };
+    // Returns keys with values. Useful when working with json dumps.
+    getKeysAndValues() {
+        let dict = {};
+        Walker.forEachOperator(this._logical, operator => {
+            if (!(operator instanceof Logical)) {
+                const kv = operator as unknown as KeyValue;
+                // If we have the same key, make value an array
+                dict[kv.key] = dict[kv.key]
+                    ? Array.isArray(dict[kv.key])
+                        ? dict[kv.key].concat(kv.value)
+                        : [dict[kv.key], kv.value]
+                    : kv.value;
+            }
+        });
+        return dict;
+    }
 
-    // Logical
+    // Logical operators
     and(): T {
         this._logical = this._logical.add(new LogicalAnd(this._logical)) as Logical;
         return this._this;
@@ -67,7 +104,7 @@ export abstract class BuilderBase<T extends BuilderBase<T>> implements IBuilder,
         return this._this;
     };
 
-    // Comparison
+    // Comparison operators
     equals(property: string, value: ValueOrGetter): T {
         this._logical.add(new ComparisonEquals(property, value));
         return this._this;
@@ -117,8 +154,11 @@ export abstract class BuilderBase<T extends BuilderBase<T>> implements IBuilder,
     };
 }
 
-export class BuilderCore extends BuilderBase<BuilderCore> {
-    protected getThisPointer(): BuilderCore {
+export class BuilderCore extends BuilderCoreBase<BuilderCore> {
+    protected getClassDict(): IDictionary<Function> {
+        return {};
+    }
+    protected getBuilder(): BuilderCore {
         return this;
     }
 }

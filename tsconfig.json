@@ -6,6 +6,7 @@
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "outDir": "dist",
-    "sourceMap": true
+    "sourceMap": true,
+    "target": "ES5"
   }
 }
