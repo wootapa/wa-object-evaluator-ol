@@ -1,7 +1,7 @@
 import { LogicalAnd, LogicalOr, LogicalNot, Logical } from "./wa-logical";
-import { Walker } from "./wa-util";
 import { IValueGetter, ObjectOrDict, ValueOrGetter, IDictionary, ClassDict, IJsonDump } from "./wa-contracts";
 import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue } from "./wa-comparison";
+import { Util } from "./wa-util";
 
 export interface IBuilder { }
 export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements IBuilder, IComparison<T> {
@@ -38,7 +38,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         this._clazzDict = { ...this._clazzDict, ...this._this.getClassDict() };
     }
 
-    // Static and preferable constructors
+    // Static and preferable logical constructors
     static fromJson<T extends BuilderCoreBase<T>>(this: { new(): T }, json: IJsonDump) {
         const builder = new this();
         builder._logical = Logical.fromJson(json, builder._clazzDict, builder);
@@ -92,6 +92,11 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return this._this;
     }
 
+    // Clones builder
+    clone(): T {
+        return Util.classOf(this._this).fromJson(this._this.toJson());
+    }
+
     // Adds another builder
     addBuilder(builder: T): T {
         this._logical.add(builder._logical);
@@ -101,7 +106,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     // Returns keys with values. Useful when working with json dumps.
     getKeysAndValues() {
         let dict = {};
-        Walker.forEachOperator(this._logical, operator => {
+        Util.forEach(this._logical, operator => {
             if (!(operator instanceof Logical)) {
                 const kv = operator as unknown as KeyValue;
                 // If we have the same key, make value an array

@@ -1,5 +1,5 @@
 import { Primitive, IJsonDump, ValueOrGetter, IEvaluatable, ObjectOrDict, IValueGetter } from "./wa-contracts";
-import { ValueResolver } from "./wa-util";
+import { Util } from "./wa-util";
 
 interface IComparisonOpts { }
 interface ILikeOptions extends IComparisonOpts {
@@ -20,7 +20,7 @@ export abstract class KeyValue {
 
     constructor(key: string, value: ValueOrGetter) {
         this._key = key;
-        this._value = ValueResolver.resolveCompareValue(this._key, value);
+        this._value = Util.resolveCompareValue(this._key, value);
     }
 };
 
@@ -45,7 +45,7 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
 
     evaluate(obj: ObjectOrDict, getter?: IValueGetter): boolean {
         // Get object and compare values
-        let objValue = ValueResolver.resolveObjectValue(this._key, obj, getter);
+        let objValue = Util.resolveObjectValue(this._key, obj, getter);
 
         if (this instanceof ComparisonEquals) {
             return objValue === this._value;

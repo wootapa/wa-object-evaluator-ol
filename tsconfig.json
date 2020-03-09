@@ -1,12 +1,13 @@
 {
-  "files": [
-    "src/main.ts"
+  "include": [
+    "src/**/*"
   ],
   "compilerOptions": {
     "noImplicitAny": true,
     "suppressImplicitAnyIndexErrors": true,
     "outDir": "dist",
     "sourceMap": true,
-    "target": "ES5"
+    "target": "ES5",
+    "declaration": true
   }
 }

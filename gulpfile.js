@@ -7,6 +7,7 @@ var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify');
 var ts = require('gulp-typescript');
+var merge = require('merge2');
 
 var tsProject = ts.createProject('tsconfig.json');
 
@@ -15,9 +16,17 @@ function cleanDist() {
 };
 
 function buildNode() {
-    return gulp.src('src/**/*.ts')
-        .pipe(tsProject())
-        .pipe(gulp.dest('dist'));
+    var tsResult = tsProject.src()
+        .pipe(sourcemaps.init())
+        .pipe(tsProject());
+
+    return merge([
+        tsResult.dts
+            .pipe(gulp.dest('dist/types')),
+        tsResult.js
+            .pipe(sourcemaps.write('.'))
+            .pipe(gulp.dest('dist'))
+    ]);
 };
 
 function copyHtml() {

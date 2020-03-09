@@ -9,7 +9,7 @@ export interface IValueGetter {
     (key: string): Primitive;
 }
 
-export interface IJsonDump { 
+export interface IJsonDump {
     type: string
     ctorArgs?: any[]
     isLogical?: boolean

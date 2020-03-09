@@ -26,12 +26,17 @@ describe("builder", () => {
         const result2 = JSON.stringify(builder2.toJson());
         expect(result1).eq(result2);
     });
-    it("addBuilder should evaluate all operators", () => {
+    it("builder and clone evaluates same", () => {
+        const result1 = JSON.stringify(builder1.toJson());
+        const result2 = JSON.stringify(builder1.clone().toJson());
+        expect(result1).eq(result2);
+    });
+    it("addBuilder should evaluate new builder", () => {
         const builder3 = Builder.and()
-            .eq('height', person.height - 1)
+            .eq('height', person.height)
             .done();
         
         const result = builder3.addBuilder(builder1).done().evaluate(person);
-        expect(result).false;
+        expect(result).true;
     });
 });

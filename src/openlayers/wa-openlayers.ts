@@ -1,7 +1,7 @@
 import { OpenLayersBuilder } from "./wa-openlayers-builder";
 import { KeyValue } from "../core/wa-comparison";
 import { IEvaluatable, ValueOrGetter, IJsonDump, ObjectOrDict, IValueGetter } from "../core/wa-contracts";
-import { ValueResolver } from "../core/wa-util";
+import { Util } from "../core/wa-util";
 
 export abstract class OpenLayersBase extends KeyValue implements IEvaluatable {
     constructor(key: string, value: ValueOrGetter) {
@@ -17,7 +17,7 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable {
 
     evaluate(obj: ObjectOrDict, getter?: IValueGetter): boolean {
         // Get object and compare values
-        let objValue = ValueResolver.resolveObjectValue(this._key, obj, getter);;
+        let objValue = Util.resolveObjectValue(this._key, obj, getter);;
 
         if (this instanceof OpenLayersIntersects) {
             // To be implemented...
