@@ -1,40 +1,40 @@
-var babelify = require('babelify');
-var browserify = require('browserify');
-var buffer = require('vinyl-buffer');
-var del = require('del');
-var gulp = require('gulp');
-var source = require('vinyl-source-stream');
-var sourcemaps = require('gulp-sourcemaps');
-var uglify = require('gulp-uglify');
-var ts = require('gulp-typescript');
-var merge = require('merge2');
+const babelify = require('babelify');
+const browserify = require('browserify');
+const buffer = require('vinyl-buffer');
+const del = require('del');
+const gulp = require('gulp');
+const source = require('vinyl-source-stream');
+const sourcemaps = require('gulp-sourcemaps');
+const uglify = require('gulp-uglify');
+const ts = require('gulp-typescript');
+const merge = require('merge2');
 
-var tsProject = ts.createProject('tsconfig.json');
+// Read ts project
+const tsProject = ts.createProject('tsconfig.json');
 
-function cleanDist() {
-    return del('dist/*');
-};
+// Delete dist except folder itself
+const cleanDist = () => del('dist/*');
 
-function buildNode() {
-    var tsResult = tsProject.src()
+// Copy webpage for testing
+const copyHtml = () => gulp.src('src/*.html').pipe(gulp.dest('dist'));
+
+// Build for node with typings and sourcemaps
+const buildNode = () => {
+    const tsResult = tsProject.src()
         .pipe(sourcemaps.init())
         .pipe(tsProject());
 
     return merge([
         tsResult.dts
-            .pipe(gulp.dest('dist/types')),
+            .pipe(gulp.dest('dist')),
         tsResult.js
             .pipe(sourcemaps.write('.'))
             .pipe(gulp.dest('dist'))
     ]);
 };
 
-function copyHtml() {
-    return gulp.src('src/*.html')
-        .pipe(gulp.dest('dist'));
-};
-
-function buildWindow() {
+// Build for web
+const buildWindow = () => {
     return browserify(
         {
             debug: true,
@@ -53,4 +53,5 @@ function buildWindow() {
         .pipe(gulp.dest('dist'));
 };
 
-exports.default = gulp.series(cleanDist, buildNode, gulp.parallel(copyHtml, buildWindow));
+exports.dev = gulp.series(cleanDist, buildNode, gulp.parallel(copyHtml, buildWindow));
+exports.default = gulp.series(cleanDist, buildNode, buildWindow);

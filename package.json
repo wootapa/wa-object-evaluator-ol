@@ -1,12 +1,14 @@
 {
-  "name": "object-evaluator",
+  "name": "@wootapa/object-evaluator",
   "version": "1.0.0",
   "description": "Tests objects for true/false with logical and comparison operators using a builder pattern.",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/main.js",
+  "types": "./dist/main.d.ts",
   "scripts": {
-    "build": "gulp",
-    "test": "mocha --require ts-node/register test/*.spec.ts"
+    "start": "npm run build:dev",
+    "test": "mocha --require ts-node/register test/*.spec.ts",
+    "build:dev": "gulp dev",
+    "build": "gulp"
   },
   "files": [
     "dist"
@@ -21,7 +23,12 @@
     "type": "git",
     "url": "git+https://github.com/wootapa/wa-object-evaluator.git"
   },
-  "keywords": [],
+  "keywords": [
+    "WootApa",
+    "Evaluate",
+    "Logical",
+    "Comparison"
+  ],
   "author": "Andreas Petersson",
   "license": "MIT",
   "bugs": {
