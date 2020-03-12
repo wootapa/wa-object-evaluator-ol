@@ -13,6 +13,8 @@
   "files": [
     "dist"
   ],
+  "browser": "./dist/waoe.js",
+  "unpkg": "./dist/waoe.js",
   "browserslist": [
     "defaults",
     "not IE 11",
