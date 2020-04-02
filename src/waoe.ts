@@ -1,1 +1,1 @@
-export { BuilderCore as Builder } from './core/wa-builder-core';
+export { BuilderOl as Builder } from './ol/wa-builder-ol';

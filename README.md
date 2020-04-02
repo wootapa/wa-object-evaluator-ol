@@ -1,5 +1,5 @@
-# Object Evaluator
-Tests objects for true/false with logical and comparison operators using a builder pattern.
+# Object Evaluator - Openlayers
+Extension of @wootapa/object-evaluator with ol spatial operators and filter output.
 
 ## Usage
 See tests

@@ -1,14 +1,14 @@
 {
-  "name": "@wootapa/object-evaluator",
+  "name": "@wootapa/object-evaluator-ol",
   "version": "1.0.0",
-  "description": "Tests objects for true/false with logical and comparison operators using a builder pattern.",
+  "description": "Extension of @wootapa/object-evaluator with ol spatial operators and filter output.",
   "main": "dist/waoe.cjs.js",
   "types": "dist/waoe.d.ts",
   "module": "dist/waoe.esm.js",
   "browser": "dist/waoe.umd.js",
   "scripts": {
     "start": "npm run build",
-    "test": "mocha --require ts-node/register test/*.spec.ts",
+    "test": "mocha -r esm -r jsdom-global/register --require ts-node/register test/*.spec.ts",
     "build": "rollup -c"
   },
   "files": [
@@ -22,25 +22,34 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wootapa/wa-object-evaluator.git"
+    "url": "git+https://github.com/wootapa/wa-object-evaluator/tree/ol"
   },
   "keywords": [
     "WootApa",
     "Evaluate",
     "Logical",
-    "Comparison"
+    "Comparison",
+    "Openlayers",
+    "OGC"
   ],
   "author": "Andreas Petersson",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/wootapa/wa-object-evaluator/issues"
   },
-  "homepage": "https://github.com/wootapa/wa-object-evaluator#readme",
+  "homepage": "https://github.com/wootapa/wa-object-evaluator/tree/ol#readme",
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
     "@types/chai": "^4.2.9",
     "@types/mocha": "^7.0.1",
+    "@types/ol": "^6.1.0",
     "chai": "^4.2.0",
+    "esm": "^3.2.25",
+    "jsdom": "^16.2.2",
+    "jsdom-global": "^3.0.2",
     "mocha": "^7.1.0",
+    "ol": "^6.2.1",
     "rollup": "^2.0.6",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-cleaner": "^1.0.0",
@@ -51,5 +60,11 @@
     "ts-node": "^8.6.2",
     "tslib": "^1.11.1",
     "typescript": "^3.8.3"
+  },
+  "peerDependencies": {
+    "ol": ">= 6.0.0"
+  },
+  "dependencies": {
+    "@turf/line-intersect": "^6.0.2"
   }
 }

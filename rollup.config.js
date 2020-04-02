@@ -1,17 +1,24 @@
-import typescript from 'rollup-plugin-typescript2';
+import cleaner from 'rollup-plugin-cleaner';
+import commonJS from '@rollup/plugin-commonjs'
 import copy from 'rollup-plugin-copy'
 import pkg from './package.json';
+import resolve from '@rollup/plugin-node-resolve';
 import sourceMaps from 'rollup-plugin-sourcemaps';
-import cleaner from 'rollup-plugin-cleaner';
+import typescript from 'rollup-plugin-typescript2';
 import { terser } from "rollup-plugin-terser";
 
 export default [
     // UMD for browser
     {
         input: 'src/waoe.ts',
+        external: ['ol', 'ol/geom/Geometry', 'ol/format/WKT', 'ol/format/GeoJSON'],
         plugins: [
             cleaner({ targets: ['./dist/'] }),
             copy({ targets: [{ src: 'index.html', dest: 'dist' }] }),
+            resolve(),
+            commonJS({
+                include: 'node_modules/**'
+            }),
             typescript(),
             sourceMaps(),
             terser({
@@ -21,13 +28,26 @@ export default [
 
         ],
         output: [
-            { file: pkg.browser, format: 'umd', sourcemap: true, name: 'waoe' }
+            {
+                file: pkg.browser, format: 'umd', sourcemap: true, name: 'waoe',
+                globals: {
+                    'ol': 'ol',
+                    'ol/geom/Geometry': 'ol.geom.Geometry',
+                    'ol/format/WKT': 'ol.format.WKT',
+                    'ol/format/GeoJSON': 'ol.format.GeoJSON'
+                }
+            }
         ],
     },
     // CommonJS for Node and ES for bundlers.
     {
         input: 'src/waoe.ts',
+        external: ['ol', 'ol/geom/Geometry', 'ol/format/WKT', 'ol/format/GeoJSON'],
         plugins: [
+            resolve(),
+            commonJS({
+                include: 'node_modules/**'
+            }),
             typescript(),
             terser()
         ],
