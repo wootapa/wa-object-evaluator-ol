@@ -22,7 +22,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wootapa/wa-object-evaluator/tree/ol"
+    "url": "git+https://github.com/wootapa/wa-object-evaluator"
   },
   "keywords": [
     "WootApa",
