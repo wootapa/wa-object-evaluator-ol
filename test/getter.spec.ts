@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Builder } from '../src/main';
+import { Builder } from '../src/waoe';
 
 const score = {
     discus: 43,
@@ -13,7 +13,7 @@ describe("getters", () => {
             // mean should be greater than lowest score
             .gt('mean', () => Math.min(...Object.values(score)))
             .done()
-            .evaluate(score, (prop) => {
+            .evaluate((prop) => {
                 // score contains no mean property, so we calculate it
                 if (prop == 'mean') {
                     const allScores = Object.values(score);

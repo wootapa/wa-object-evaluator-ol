@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Builder } from '../src/main';
+import { Builder } from '../src/waoe';
 
 const person = {
     age: 20,

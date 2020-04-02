@@ -1,4 +1,4 @@
-import { IEvaluatable, IValueGetter, ObjectOrDict, Parent, Operator, ClassDict, IJsonDump } from "./wa-contracts";
+import { IEvaluatable, Parent, Operator, ClassDict, IJsonDump, ThingOrThingGetter } from "./wa-contracts";
 
 export abstract class Logical implements IEvaluatable {
     private _operators: Operator[] = [];
@@ -22,7 +22,7 @@ export abstract class Logical implements IEvaluatable {
             if (jsonOperator.isLogical) {
                 return logical.add(Logical.fromJson(jsonOperator, classDict, logical));
             }
-            const clazz = classDict[jsonOperator.type];            
+            const clazz = classDict[jsonOperator.type];
             logical.add(new clazz(...jsonOperator.ctorArgs));
         });
         return logical;
@@ -36,11 +36,11 @@ export abstract class Logical implements IEvaluatable {
         };
     }
 
-    evaluate(obj: ObjectOrDict, getter?: IValueGetter): boolean {
+    evaluate<T>(obj: ThingOrThingGetter<T>): boolean {
         let result = false;
         if (this instanceof LogicalAnd) {
             for (let i = 0; i < this._operators.length; i++) {
-                result = this._operators[i].evaluate(obj, getter);
+                result = this._operators[i].evaluate(obj);
                 if (!result) {
                     break;
                 }
@@ -49,7 +49,7 @@ export abstract class Logical implements IEvaluatable {
         }
         if (this instanceof LogicalOr) {
             for (let i = 0; i < this._operators.length; i++) {
-                result = this._operators[i].evaluate(obj, getter);
+                result = this._operators[i].evaluate(obj);
                 if (result) {
                     break;
                 }
@@ -58,7 +58,7 @@ export abstract class Logical implements IEvaluatable {
         }
         if (this instanceof LogicalNot) {
             for (let i = 0; i < this._operators.length; i++) {
-                result = this._operators[i].evaluate(obj, getter);
+                result = this._operators[i].evaluate(obj);
                 if (result) {
                     break;
                 }

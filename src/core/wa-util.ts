@@ -1,22 +1,22 @@
-import { ValueOrGetter, IWalkFunction, IWalkLogicalFunction, IDictionary, Primitive, ObjectOrDict, IValueGetter } from "./wa-contracts";
+import { IWalkFunction, IWalkLogicalFunction, IDictionary, ThingOrThingGetter } from "./wa-contracts";
 import { Logical } from "./wa-logical";
 
 export class Util {
-    static getDictValue = (obj: IDictionary<Primitive>, key: string): Primitive => {
+    static getDictValue = <T>(obj: IDictionary<T>, key: string): T => {
         return key
             .split('.')
             .reduce((obj, part) => obj[part], obj as any);
     }
 
-    static resolveObjectValue(key: string, obj: ObjectOrDict, getter?: IValueGetter) {
-        return getter instanceof Function
-            ? getter.apply(obj, [key])
-            : Util.getDictValue(obj as IDictionary<Primitive>, key);
+    static resolveObjectValue<T>(key: string, obj: ThingOrThingGetter<T>) {
+        return obj instanceof Function
+            ? obj.apply(obj, [key])
+            : Util.getDictValue(obj as IDictionary<T>, key);
     }
 
-    static resolveCompareValue(key: string, value: ValueOrGetter): Primitive {
+    static resolveCompareValue<T>(key: string, value: ThingOrThingGetter<T>): T {
         return value instanceof Function
-            ? (value as IValueGetter)(key)
+            ? value.apply(value, [key])
             : value;
     }
 

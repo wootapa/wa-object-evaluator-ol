@@ -1,5 +1,5 @@
 import { LogicalAnd, LogicalOr, LogicalNot, Logical } from "./wa-logical";
-import { IValueGetter, ObjectOrDict, ValueOrGetter, IDictionary, ClassDict, IJsonDump } from "./wa-contracts";
+import { IDictionary, ClassDict, IJsonDump, PrimitiveThing } from "./wa-contracts";
 import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue } from "./wa-comparison";
 import { Util } from "./wa-util";
 
@@ -67,7 +67,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     toJson = () => this._logical.toJson();
 
     // Evaluates object
-    evaluate = (obj: ObjectOrDict, getter?: IValueGetter) => this._logical.evaluate(obj, getter);
+    evaluate = (obj: PrimitiveThing) => this._logical.evaluate(obj);
 
     // Destroys all operators except root
     clear(): T {
@@ -137,47 +137,47 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     // Comparison operators
-    equals(property: string, value: ValueOrGetter): T {
+    equals(property: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonEquals(property, value));
         return this._this;
     }
     eq = this.equals;
 
-    greaterThan(property: string, value: ValueOrGetter): T {
+    greaterThan(property: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonGreaterThan(property, value));
         return this._this;
     }
     gt = this.greaterThan;
 
-    greaterThanEquals(property: string, value: ValueOrGetter): T {
+    greaterThanEquals(property: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonGreaterThanEquals(property, value));
         return this._this;
     }
     gte = this.greaterThanEquals;
 
-    lessThan(property: string, value: ValueOrGetter): T {
+    lessThan(property: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLessThan(property, value));
         return this._this;
     }
     lt = this.lessThan;
 
-    lessThanEquals(property: string, value: ValueOrGetter): T {
+    lessThanEquals(property: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLessThanEquals(property, value));
         return this._this;
     }
     lte = this.lessThanEquals;
 
-    like(property: string, value: ValueOrGetter): T {
+    like(property: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLike(property, value, { matchCase: true }));
         return this._this;
     }
 
-    ilike(property: string, value: ValueOrGetter): T {
+    ilike(property: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLike(property, value, { matchCase: false }));
         return this._this;
     }
 
-    any(property: string, values: ValueOrGetter[]): T {
+    any(property: string, values: PrimitiveThing[]): T {
         if (values.length) {
             let or = this._logical.add(new LogicalOr(this._logical)) as Logical;
             values.forEach(value => or.add(new ComparisonEquals(property, value)));

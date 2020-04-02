@@ -5,8 +5,8 @@ export interface IDictionary<T> {
     [key: string]: T;
 }
 
-export interface IValueGetter {
-    (key: string): Primitive;
+export interface IThingGetter<T> {
+    (key: string): T;
 }
 
 export interface IJsonDump {
@@ -21,7 +21,7 @@ export interface IToJson {
 }
 
 export interface IEvaluatable {
-    evaluate(obj: ObjectOrDict, getter?: IValueGetter): boolean
+    evaluate<T>(obj: ThingOrThingGetter<T>): boolean
 }
 
 export interface IWalkFunction {
@@ -32,10 +32,9 @@ export interface IWalkLogicalFunction {
     (logical: Logical): void
 }
 
+export type ThingOrThingGetter<T> = T | IThingGetter<T> | IDictionary<T> | object;
+export type Primitive = string | number | boolean | Date;
+export type PrimitiveThing = ThingOrThingGetter<Primitive>;
 export type Operator = IEvaluatable & IToJson;
 export type Parent = IBuilder | Logical;
-export type ValueOrGetter = Primitive | IValueGetter;
-export type Primitive = string | number | boolean | Date;
-export type PrimitiveDict = IDictionary<Primitive>;
-export type ObjectOrDict = object | PrimitiveDict;
 export type ClassDict = IDictionary<any>;

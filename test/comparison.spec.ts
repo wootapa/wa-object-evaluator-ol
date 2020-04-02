@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Builder } from '../src/main';
+import { Builder } from '../src/waoe';
 
 const person = {
     name: 'Mr Miyagi',
@@ -115,6 +115,14 @@ describe("like", () => {
     it("should contain word case insensitive", () => {
         const result = Builder.and()
             .ilike('name', person.name.slice(3, 6).toUpperCase())
+            .done()
+            .evaluate(person);
+
+        expect(result).true;
+    });
+    it("should contain words case insensitive and wildcards", () => {
+        const result = Builder.and()
+            .ilike('name', `mr*mi*gi*`)
             .done()
             .evaluate(person);
 

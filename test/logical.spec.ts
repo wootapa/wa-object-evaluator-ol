@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Builder } from '../src/main';
+import { Builder } from '../src/waoe';
 
 const person = {
     fname: 'Andreas',
@@ -17,7 +17,7 @@ describe("and", () => {
             .eq('fname', person.fname)
             .eq('lname', person.lname)
             .done()
-            .evaluate(person);
+            .evaluate(person)
 
         expect(result).true;
     });
