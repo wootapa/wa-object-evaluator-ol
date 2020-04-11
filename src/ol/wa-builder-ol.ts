@@ -33,7 +33,7 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOpenLayers
         return this;
     }
 
-    toCqlFilter(): string {
+    toOgcCql(): string {
         const walk = (operator: Operator): string => {
             // Openlayers
             if (operator instanceof OpenLayersIntersects) {
@@ -80,7 +80,7 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOpenLayers
         return walk(this._logical);
     }
 
-    toXmlFilter() {
+    toOgcXml() {
 
     }
 }
