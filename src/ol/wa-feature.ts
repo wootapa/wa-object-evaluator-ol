@@ -1,10 +1,11 @@
-import Geometry from "ol/geom/Geometry";
-import Polygon from "ol/geom/Polygon";
-import Point from "ol/geom/Point";
+import lineIntersect from '@turf/line-intersect';
 import { Feature } from "ol";
-import lineIntersect  from '@turf/line-intersect'
-import WKT from 'ol/format/WKT';
 import GeoJSON from 'ol/format/GeoJSON';
+import WKT from 'ol/format/WKT';
+import Geometry from "ol/geom/Geometry";
+import Point from "ol/geom/Point";
+import Polygon from "ol/geom/Polygon";
+import { FeatureThing } from "./wa-contracts";
 
 const formatWkt = new WKT();
 const formatJson = new GeoJSON();
@@ -12,6 +13,31 @@ const formatJson = new GeoJSON();
 export class WAFeature {
 
     constructor(private _feature: Feature) { }
+
+    static DEFAULT_GEOMETRYNAME = 'geometry';
+
+    static factory = (obj: FeatureThing): WAFeature => {
+        if (obj instanceof WAFeature) {
+            return obj;
+        }
+        if (obj instanceof Feature) {
+            return new WAFeature(obj);
+        }
+        if (obj instanceof Geometry) {
+            return new WAFeature(new Feature(obj));
+        }
+        if (obj instanceof Function) {
+            return WAFeature.factory(obj.call(obj, WAFeature.DEFAULT_GEOMETRYNAME));
+        }
+        return new WAFeature(formatWkt.readFeature(obj));
+    }
+
+    assertSimple = () => {
+        if (this.isMulti()) {
+            throw new Error("Geometry is multidimensional");
+        }
+        return this;
+    };
 
     getGeometry = () => this._feature.getGeometry();
 
@@ -21,7 +47,7 @@ export class WAFeature {
         return formatWkt.writeGeometry(this.getGeometry());
     }
 
-    toTurf(): any {
+    toJsonFeature(): any {
         return formatJson.writeFeatureObject(this.getFeature());
     }
 
@@ -49,10 +75,10 @@ export class WAFeature {
         const coords = (this.getGeometry() as Polygon).getFlatCoordinates();
 
         return (coords.length == 10 &&
-            coords[0] === coords[2] &&
-            coords[1] === coords[7] &&
-            coords[3] === coords[5] &&
-            coords[4] === coords[6]);
+            coords[0] === coords[6] && // ulx == llx
+            coords[2] === coords[4] && // urx = lrx
+            coords[1] === coords[3] && // uly == ury 
+            coords[6] === coords[8]); // lly == lry
     }
 
     intersects(feature: WAFeature): boolean {
@@ -70,6 +96,6 @@ export class WAFeature {
             return feature.intersects(this);
         }
 
-        return lineIntersect(this.toTurf(), feature.toTurf()).features.length > 0;
+        return lineIntersect(this.toJsonFeature(), feature.toJsonFeature()).features.length > 0;
     }
 }

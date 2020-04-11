@@ -8,7 +8,7 @@
   "browser": "dist/waoe.umd.js",
   "scripts": {
     "start": "npm run build",
-    "test": "mocha -r esm -r jsdom-global/register --require ts-node/register test/*.spec.ts",
+    "test": "mocha -r esm -r jsdom-global/register -r ts-node/register test/*.spec.ts",
     "build": "rollup -c"
   },
   "files": [
