@@ -1,6 +1,6 @@
 import { LogicalAnd, LogicalOr, LogicalNot, Logical } from "./wa-logical";
 import { IDictionary, ClassDict, IJsonDump, PrimitiveThing } from "./wa-contracts";
-import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue } from "./wa-comparison";
+import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue, ComparisonIsNull } from "./wa-comparison";
 import { Util } from "./wa-util";
 
 export interface IBuilder { }
@@ -142,6 +142,11 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return this._this;
     }
     eq = this.equals;
+
+    isNull(property: string): T {
+        this._logical.add(new ComparisonIsNull(property, null));
+        return this._this;
+    }
 
     greaterThan(property: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonGreaterThan(property, value));

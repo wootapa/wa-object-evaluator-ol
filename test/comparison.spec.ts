@@ -3,7 +3,8 @@ import { Builder } from '../src/waoe';
 
 const person = {
     name: 'Mr Miyagi',
-    age: 42
+    age: 42,
+    null: (null as any)
 };
 
 describe("equal", () => {
@@ -22,6 +23,18 @@ describe("equal", () => {
             .evaluate(person);
 
         expect(result).false;
+    });
+});
+
+describe("null", () => {
+    it("should be nullish", () => {
+        const result = Builder.and()
+            .isNull('null')
+            .isNull('undefinedproperty')
+            .done()
+            .evaluate(person);
+
+        expect(result).true;
     });
 });
 

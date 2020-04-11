@@ -2,7 +2,7 @@ import { Primitive, IJsonDump, IEvaluatable, PrimitiveThing } from "./wa-contrac
 import { Util } from "./wa-util";
 
 interface IComparisonOpts { }
-interface ILikeOptions extends IComparisonOpts {
+export interface ILikeOptions extends IComparisonOpts {
     matchCase: boolean
     wildCard: string
 }
@@ -26,15 +26,15 @@ export abstract class KeyValue {
 };
 
 export abstract class Comparison extends KeyValue implements IEvaluatable {
-    private _opts?: IComparisonOpts;
+    protected _opts?: IComparisonOpts;
 
     constructor(key: string, value: PrimitiveThing, opts?: IComparisonOpts) {
         super(key, value);
         this._opts = opts;
     }
 
-    static fromJson(json: any) {
-        return new ComparisonEquals(json.key, json.value, json.opts);
+    get opts() {
+        return this._opts;
     }
 
     toJson(): IJsonDump {
@@ -51,6 +51,9 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
         if (this instanceof ComparisonEquals) {
             return objValue === this._value;
         }
+        if (this instanceof ComparisonIsNull) {
+            return objValue === null || objValue === undefined;
+        }
         if (this instanceof ComparisonGreaterThan) {
             return objValue > this._value;
         }
@@ -64,7 +67,7 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
             return objValue <= this._value;
         }
         if (this instanceof ComparisonLike) {
-            const opts = { matchCase: true, wildCard: '*', ...this._opts } as ILikeOptions;
+            const opts = this._opts as ILikeOptions;
 
             if (objValue && this._value) {
                 let o = objValue.toString() as string;
@@ -72,7 +75,7 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
                 if (!this['valueRe']) {
                     let v = `*${this._value.toString()}*`
                         .replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
-                        .replace(/\*/g, ".*")
+                        .replace(new RegExp(`\\${opts.wildCard}`, 'g'), ".*")
                         .replace(/\?/g, ".");
                     const flags = !opts.matchCase ? 'i' : '';
                     this['valueRe'] = new RegExp(v, flags);
@@ -89,6 +92,7 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
 // Exports to be implemented in builder
 export interface IComparison<T> {
     equals(property: string, value: PrimitiveThing): T
+    isNull(property: string): T
     eq(property: string, value: PrimitiveThing): T
     greaterThan(property: string, value: PrimitiveThing): T
     gt(property: string, value: PrimitiveThing): T
@@ -103,8 +107,16 @@ export interface IComparison<T> {
     any(property: string, values: PrimitiveThing[]): T
 }
 export class ComparisonEquals extends Comparison { }
+export class ComparisonIsNull extends Comparison { }
 export class ComparisonGreaterThan extends Comparison { }
 export class ComparisonGreaterThanEquals extends Comparison { }
 export class ComparisonLessThan extends Comparison { }
 export class ComparisonLessThanEquals extends Comparison { }
-export class ComparisonLike extends Comparison { }
+export class ComparisonLike extends Comparison {
+    constructor(key: string, value: PrimitiveThing, opts?: IComparisonOpts) {
+        super(key, value, { matchCase: true, wildCard: '*', ...opts });
+    };
+    get opts() {
+        return this._opts as ILikeOptions;
+    };
+}
