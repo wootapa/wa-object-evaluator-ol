@@ -1,10 +1,12 @@
 import { Primitive, IJsonDump, IEvaluatable, PrimitiveThing } from "./wa-contracts";
 import { Util } from "./wa-util";
 
-interface IComparisonOpts { }
+interface IComparisonOpts { 
+    isDate?: boolean
+}
 export interface ILikeOptions extends IComparisonOpts {
     matchCase: boolean
-    wildCard: string
+    wildCard?: string
 }
 
 export abstract class KeyValue {
@@ -31,6 +33,12 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
     constructor(key: string, value: PrimitiveThing, opts?: IComparisonOpts) {
         super(key, value);
         this._opts = opts;
+
+        // opts is defined when constructing from stringified json
+        if (this._opts?.isDate && typeof(this._value == 'string')) {
+            this._value = new Date(Date.parse(this._value as string));
+        }
+        this._opts = { isDate: this._value instanceof Date, ...opts };
     }
 
     get opts() {
@@ -79,7 +87,6 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
                         .replace(/\?/g, ".");
                     const flags = !opts.matchCase ? 'i' : '';
                     this['valueRe'] = new RegExp(v, flags);
-                    console.log('Creating re');
                 }
                 return this['valueRe'].test(o);
             }
@@ -113,7 +120,7 @@ export class ComparisonGreaterThanEquals extends Comparison { }
 export class ComparisonLessThan extends Comparison { }
 export class ComparisonLessThanEquals extends Comparison { }
 export class ComparisonLike extends Comparison {
-    constructor(key: string, value: PrimitiveThing, opts?: IComparisonOpts) {
+    constructor(key: string, value: PrimitiveThing, opts?: ILikeOptions) {
         super(key, value, { matchCase: true, wildCard: '*', ...opts });
     };
     get opts() {
