@@ -41,7 +41,8 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     // Static and preferable logical constructors
     static fromJson<T extends BuilderCoreBase<T>>(this: { new(): T }, json: IJsonDump) {
         const builder = new this();
-        builder._logical = Logical.fromJson(json, builder._clazzDict, builder);
+        const jsonParsed = typeof(json) === 'string' ? JSON.parse(json) : json;
+        builder._logical = Logical.fromJson(jsonParsed, builder._clazzDict, builder);
         return builder;
     }
 
