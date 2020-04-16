@@ -1,57 +1,62 @@
 import { expect } from 'chai';
 import { Feature } from 'ol';
-import { getCenter } from 'ol/extent';
+import { Extent, getCenter } from 'ol/extent';
+import GeoJSON from 'ol/format/GeoJSON';
+import WKT from 'ol/format/WKT';
 import LineString from 'ol/geom/LineString';
 import Point from 'ol/geom/Point';
-import Polygon from 'ol/geom/Polygon';
+import { fromExtent } from 'ol/geom/Polygon';
 import { Builder } from '../src/waoe';
 
-const polyAFeature = new Feature({
-    geometry: new Polygon([[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]])
-});
-const polyA = new Polygon([[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]);
-const polyAWkt = 'POLYGON((0 0,10 0,10 10,0 10,0 0))';
-const centerA = new Point(getCenter(polyA.getExtent()));
-const crossesA = new LineString([[15, 0], [0, 10]]);
+const polyExtent: Extent = [0, 0, 10, 10];
+const poly = fromExtent(polyExtent);
+const polyWkt = new WKT().writeGeometry(poly);
+const polyJson = new GeoJSON().writeGeometry(poly);
+const polyFeature = new Feature(poly);
+
+const pointCenter = new Point(getCenter(poly.getExtent()));
+const lineCrosses = new LineString([[15, 0], [0, 10]]);
 
 describe("ol", () => {
     it("polys of different formats intersects", () => {
         const result = Builder.and()
-            .intersects(polyA)
-            .intersects(polyAWkt)
+            .intersects(polyExtent)
+            .intersects(poly)
+            .intersects(polyWkt)
+            .intersects(polyJson)
             .done()
-            .evaluate(polyAFeature);
+            .evaluate(polyFeature);
 
         expect(result).true;
     });
 
     it("point of poly centroid intersects", () => {
         const result = Builder.and()
-            .intersects(centerA)
+            .intersects(pointCenter)
             .done()
-            .evaluate(polyAFeature);
+            .evaluate(poly);
 
         expect(result).true;
     });
 
     it("line crossing poly intersects", () => {
         const result = Builder.and()
-            .intersects(crossesA)
+            .intersects(lineCrosses)
             .done()
-            .evaluate(polyAFeature);
+            .evaluate(poly);
 
         expect(result).true;
     });
 
     it("builder and json-builder evaluates same", () => {
         const builder1 = Builder.and()
-            .intersects(crossesA)
+            .intersects(lineCrosses)
             .done();
 
         const builder2 = Builder.fromJson(builder1.toJson());
 
-        const result1 = builder1.evaluate(polyAFeature);
-        const result2 = builder2.evaluate(polyAFeature);
+        const result1 = builder1.evaluate(poly);
+        const result2 = builder2.evaluate(poly);
         expect(result1).eq(result2);
     });
 });

@@ -1,10 +1,12 @@
 import lineIntersect from '@turf/line-intersect';
 import { Feature } from "ol";
+import { Extent } from 'ol/extent';
 import GeoJSON from 'ol/format/GeoJSON';
 import WKT from 'ol/format/WKT';
 import Geometry from "ol/geom/Geometry";
+import LineString from 'ol/geom/LineString';
 import Point from "ol/geom/Point";
-import Polygon from "ol/geom/Polygon";
+import Polygon, { fromExtent } from "ol/geom/Polygon";
 import { FeatureThing } from "./wa-contracts";
 
 const formatWkt = new WKT();
@@ -14,71 +16,84 @@ export class WAFeature {
 
     constructor(private _feature: Feature) { }
 
-    static DEFAULT_GEOMETRYNAME = 'geometry';
+    static readonly DEFAULT_GEOMETRYNAME = 'geometry';
 
     static factory = (obj: FeatureThing): WAFeature => {
+        if (obj instanceof Function) {
+            return WAFeature.factory(obj.call(obj, WAFeature.DEFAULT_GEOMETRYNAME));
+        }
         if (obj instanceof WAFeature) {
             return obj;
         }
         if (obj instanceof Feature) {
-            return new WAFeature(obj);
+            return new WAFeature(obj).assertSimple();
         }
         if (obj instanceof Geometry) {
-            return new WAFeature(new Feature(obj));
+            return new WAFeature(new Feature(obj)).assertSimple();
         }
-        if (obj instanceof Function) {
-            return WAFeature.factory(obj.call(obj, WAFeature.DEFAULT_GEOMETRYNAME));
+        if (obj instanceof Array && obj.length == 4) {
+            return new WAFeature(new Feature(fromExtent(obj as Extent))).assertSimple();
         }
-        return new WAFeature(formatWkt.readFeature(obj));
+        if (obj instanceof Object) {
+            return new WAFeature(formatJson.readFeature(obj)).assertSimple();
+        }
+        if (typeof (obj) === 'string') {
+            return new WAFeature(obj.trimLeft().charAt(0) === '{'
+                ? formatJson.readFeature(obj)
+                : formatWkt.readFeature(obj)
+            ).assertSimple();
+        }
+        throw new Error("Unsupported geometry type");
     }
 
     assertSimple = () => {
         if (this.isMulti()) {
-            throw new Error("Geometry is multidimensional");
+            throw new Error("Multi-geometries not supported");
         }
         return this;
-    };
+    }
 
     getGeometry = () => this._feature.getGeometry();
 
     getFeature = () => this._feature;
 
-    toWkt(): string {
-        return formatWkt.writeGeometry(this.getGeometry());
-    }
+    isMulti = () => this.getGeometry().getType().includes('Multi');
 
-    toJsonFeature(): any {
-        return formatJson.writeFeatureObject(this.getFeature());
-    }
+    isPolygon = () => this.getGeometry().getType() === 'Polygon';
 
-    isMulti(): boolean {
-        return this.getGeometry().getType().includes('Multi');
-    }
+    isLineString = () => this.getGeometry().getType() === 'LineString';
 
-    isPolygon(): boolean {
-        return this.getGeometry().getType() === 'Polygon';
-    }
+    isPoint = () => this.getGeometry().getType() === 'Point';
 
-    isLineString(): boolean {
-        return this.getGeometry().getType() === 'LineString';
-    }
-
-    isPoint(): boolean {
-        return this.getGeometry().getType() === 'Point';
-    }
-
-    isSquare(): boolean {
+    isExtent(): boolean {
         if (!this.isPolygon()) {
             return false;
         }
+        const poly = (this.getGeometry() as Polygon);
+        const polyExtent = fromExtent(poly.getExtent());
+        return poly.getArea() === polyExtent.getArea();
+    }
 
-        const coords = (this.getGeometry() as Polygon).getFlatCoordinates();
+    toWkt = () => formatWkt.writeGeometry(this.getGeometry());
 
-        return (coords.length == 10 &&
-            coords[0] === coords[6] && // ulx == llx
-            coords[2] === coords[4] && // urx = lrx
-            coords[1] === coords[3] && // uly == ury 
-            coords[6] === coords[8]); // lly == lry
+    toGeoJson = () => formatJson.writeGeometry(this.getGeometry());
+
+    toGeoJsonObject = () => formatJson.writeGeometryObject(this.getFeature().getGeometry());
+
+    toGml() {
+        if (this.isPoint()) {
+            return `<gml:Point><gml:pos>${(this.getGeometry() as Point).getFlatCoordinates().join(' ')}</gml:pos></gml:Point>`;
+        }
+        if (this.isLineString()) {
+            return `<gml:LineString><gml:posList>${(this.getGeometry() as LineString).getFlatCoordinates().join(' ')}</gml:posList></gml:Point>`;
+        }
+        if (this.isPolygon()) {
+            const rings = (this.getGeometry() as Polygon).getLinearRings().map((ring, idx) => {
+                const ringType = idx == 0 ? 'exterior' : 'interior';
+                return `<gml:${ringType}><gml:LinearRing><gml:posList>${ring.getFlatCoordinates().join(' ')}</gml:posList></gml:LinearRing></gml:${ringType}>`;
+            });
+            return `<gml:Polygon>${rings.join('')}</gml:Polygon>`;
+        }
     }
 
     intersects(feature: WAFeature): boolean {
@@ -89,13 +104,13 @@ export class WAFeature {
             return feature.intersects(this);
         }
 
-        if (this.isSquare()) {
+        if (this.isExtent()) {
             return feature.getGeometry().intersectsExtent(this.getGeometry().getExtent());
         }
-        if (feature.isSquare()) {
+        if (feature.isExtent()) {
             return feature.intersects(this);
         }
 
-        return lineIntersect(this.toJsonFeature(), feature.toJsonFeature()).features.length > 0;
+        return lineIntersect(this.toGeoJsonObject() as any, feature.toGeoJsonObject() as any).features.length > 0;
     }
 }

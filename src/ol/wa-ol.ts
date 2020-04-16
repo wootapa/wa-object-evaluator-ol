@@ -31,11 +31,10 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable {
     }
 
     evaluate<FeatureThing>(obj: FeatureThing): boolean {
-        let evalFeature = WAFeature.factory(obj as any).assertSimple();
-        let compFeature = this.feature.assertSimple();
+        const evalFeature = WAFeature.factory(obj);
 
         if (this instanceof OpenLayersIntersects) {
-            return evalFeature.intersects(compFeature);
+            return evalFeature.intersects(this.feature);
         }
     }
 }
