@@ -96,7 +96,7 @@ export class WAFilter {
                     return `<ogc:PropertyIsLessThanOrEqualTo>${property}${value}</ogc:PropertyIsLessThanOrEqualTo>`;
                 }
                 if (operator instanceof ComparisonLike) {
-                    return `<ogc:PropertyIsLike matchCase="${operator.opts.matchCase}" wildCard="${operator.opts.wildCard}">${property}${value}</ogc:PropertyIsLike>`;
+                    return `<ogc:PropertyIsLike matchCase="${operator.opts.matchCase}" wildCard="${operator.opts.wildCard}" escapeChar="\\" singleChar=".">${property}${value}</ogc:PropertyIsLike>`;
                 }
             }
             // Logical            
