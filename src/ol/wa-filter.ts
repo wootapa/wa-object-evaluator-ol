@@ -3,11 +3,6 @@ import { Operator } from '../core/wa-contracts';
 import { Logical, LogicalAnd, LogicalNot, LogicalOr } from '../core/wa-logical';
 import { OpenLayersIntersects } from './wa-ol';
 
-export interface IOgcGetFeatureOpts {
-    layer: string,
-    outputFormat: string,
-}
-
 export class WAFilter {
 
     private constructor() { }
@@ -63,9 +58,7 @@ export class WAFilter {
         return walk(logical);
     }
 
-    static toOgcXml = (logical: Logical, opts?: IOgcGetFeatureOpts): string => {
-        const asGetFeature = !!opts;
-
+    static toOgcXml = (logical: Logical): string => {
         const walk = (operator: Operator): string => {
             // Openlayers
             if (operator instanceof OpenLayersIntersects) {
@@ -110,18 +103,6 @@ export class WAFilter {
                 return `<ogc:Not>${operator.getOperators().map(walk).join('')}</ogc:Not>`;
             }
         };
-
-        const filter = `<ogc:Filter xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc">${walk(logical)}</ogc:Filter>`;
-        
-        return (asGetFeature
-            ? `
-            <?xml version="1.0" encoding="UTF-8"?>
-            <wfs:GetFeature service="WFS" outputFormat="${opts.outputFormat}" xmlns:wfs="http://www.opengis.net/wfs" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.opengis.net/wfs http://schemas.opengis.net/wfs/1.0.0/WFS-basic.xsd">
-                <wfs:Query typeName="${opts.layer}">
-                    ${filter}
-                </wfs:Query>
-            </wfs:GetFeature>`
-            : filter
-        ).split('\n').map(row => row.trim()).join('');
+        return `<ogc:Filter xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc">${walk(logical)}</ogc:Filter>`;
     }
 }

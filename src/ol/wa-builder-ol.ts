@@ -2,7 +2,7 @@ import { BuilderCoreBase } from "../core/wa-builder-core";
 import { ClassDict } from "../core/wa-contracts";
 import { FeatureThing } from "./wa-contracts";
 import { WAFeature } from "./wa-feature";
-import { IOgcGetFeatureOpts, WAFilter } from "./wa-filter";
+import { WAFilter } from "./wa-filter";
 import { IOpenLayers, OpenLayersIntersects } from "./wa-ol";
 
 export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOpenLayers {
@@ -33,14 +33,5 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOpenLayers
     }
 
     toOgcCql = () => WAFilter.toOgcCql(this._logical);
-
     toOgcXml = () => WAFilter.toOgcXml(this._logical);
-
-    toOgcXmlGetFeature = (opts: IOgcGetFeatureOpts) => {
-        opts = { outputFormat: 'application/json', ...opts };
-        if (!opts.layer) {
-            throw new Error('No layer provided');
-        }
-        return WAFilter.toOgcXml(this._logical, opts);
-    }
 }
