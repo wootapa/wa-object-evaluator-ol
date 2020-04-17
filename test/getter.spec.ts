@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Builder } from '../src/waoe';
+import { and } from '../src/waoe';
 
 const score = {
     discus: 43,
@@ -9,7 +9,7 @@ const score = {
 
 describe("getters", () => {
     it("should call object and comparison functions to resolve values", () => {
-        const result = Builder.and()
+        const result = and()
             // mean should be greater than lowest score
             .gt('mean', () => Math.min(...Object.values(score)))
             .done()

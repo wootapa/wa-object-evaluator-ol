@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Builder } from '../src/waoe';
+import { and, or } from '../src/waoe';
 
 const person = {
     fname: 'Andreas',
@@ -12,8 +12,7 @@ const person = {
 
 describe("and", () => {
     it("should equal fname and lname", () => {
-        const result = Builder
-            .and()
+        const result = and()
             .eq('fname', person.fname)
             .eq('lname', person.lname)
             .done()
@@ -22,8 +21,7 @@ describe("and", () => {
         expect(result).true;
     });
     it("should equal fname but not lname", () => {
-        const result = Builder
-            .and()
+        const result = and()
             .eq('fname', person.fname)
             .eq('lname', 'Miyagi')
             .done()
@@ -35,8 +33,7 @@ describe("and", () => {
 
 describe("or", () => {
     it("should equal fname or lname", () => {
-        const result = Builder
-            .and()
+        const result = and()
             .or()
             .eq('fname', person.fname)
             .eq('lname', 'Miyagi')
@@ -46,8 +43,7 @@ describe("or", () => {
         expect(result).true;
     });
     it("should equal fname but not lname but will short-circuit", () => {
-        const result = Builder
-            .and()
+        const result = and()
             .or()
             .eq('fname', person.fname)
             .eq('idontexistandwontbeevaluated', 'ok')
@@ -57,8 +53,7 @@ describe("or", () => {
         expect(result).true;
     });
     it("should not equal fname nor lname and street, but street and town", () => {
-        const result = Builder
-            .or()
+        const result = or()
             .gte('fname', 'Bonkers')
             .and()
             .eq('lname', 'Bonkers')
@@ -73,8 +68,7 @@ describe("or", () => {
         expect(result).true;
     });
     it("should equal fname, not lname and street, but street and town", () => {
-        const result = Builder
-            .and()
+        const result = and()
             .gte('fname', person.fname)
             .or()
             .and()
@@ -95,8 +89,7 @@ describe("or", () => {
 
 describe("not", () => {
     it("should not equal fname", () => {
-        const result = Builder
-            .and()
+        const result = and()
             .not()
             .eq('fname', 'Doogie')
             .done()
@@ -108,7 +101,7 @@ describe("not", () => {
 
 describe("combinations", () => {
     it("should equal fname and any street but not town", () => {
-        const result = Builder.and()
+        const result = and()
             .eq('fname', person.fname)
             //.any('address.street', [123,151,456])
             .or()

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { Builder } from '../src/waoe';
+import { and, fromJson } from '../src/waoe';
 
 const person = {
     age: 20,
@@ -8,13 +8,13 @@ const person = {
 };
 
 describe("builder", () => {
-    const builder1 = Builder.and()
+    const builder1 = and()
         .eq('age', 20)
         .or()
         .any('weight', [20, 30, 40])
         .done();
 
-    const builder2 = Builder.fromJson(builder1.toJson());
+    const builder2 = fromJson(builder1.toJson());
 
     it("builder and json-builder evaluates same", () => {
         const result1 = builder1.evaluate(person);
@@ -32,7 +32,7 @@ describe("builder", () => {
         expect(result1).eq(result2);
     });
     it("addBuilder should evaluate new builder", () => {
-        const builder3 = Builder.and()
+        const builder3 = and()
             .eq('height', person.height)
             .done();
         
