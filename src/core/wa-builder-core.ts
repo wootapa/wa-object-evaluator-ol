@@ -72,7 +72,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
 
     // Destroys all operators except root
     clear(): T {
-        this._logical = new LogicalAnd(this);
+        this._logical.clear();
         return this._this;
     }
 
