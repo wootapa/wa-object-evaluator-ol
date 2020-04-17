@@ -6,7 +6,7 @@ import WKT from 'ol/format/WKT';
 import LineString from 'ol/geom/LineString';
 import Point from 'ol/geom/Point';
 import { fromExtent } from 'ol/geom/Polygon';
-import { Builder } from '../src/waoe';
+import { and, fromJson } from '../src/waoe';
 
 const polyExtent: Extent = [0, 0, 10, 10];
 const poly = fromExtent(polyExtent);
@@ -19,7 +19,7 @@ const lineCrosses = new LineString([[15, 0], [0, 10]]);
 
 describe("ol", () => {
     it("polys of different formats intersects", () => {
-        const result = Builder.and()
+        const result = and()
             .intersects(polyExtent)
             .intersects(poly)
             .intersects(polyWkt)
@@ -31,7 +31,7 @@ describe("ol", () => {
     });
 
     it("point of poly centroid intersects", () => {
-        const result = Builder.and()
+        const result = and()
             .intersects(pointCenter)
             .done()
             .evaluate(poly);
@@ -40,7 +40,7 @@ describe("ol", () => {
     });
 
     it("line crossing poly intersects", () => {
-        const result = Builder.and()
+        const result = and()
             .intersects(lineCrosses)
             .done()
             .evaluate(poly);
@@ -49,11 +49,11 @@ describe("ol", () => {
     });
 
     it("builder and json-builder evaluates same", () => {
-        const builder1 = Builder.and()
+        const builder1 = and()
             .intersects(lineCrosses)
             .done();
 
-        const builder2 = Builder.fromJson(builder1.toJson());
+        const builder2 = fromJson(builder1.toJson());
 
         const result1 = builder1.evaluate(poly);
         const result2 = builder2.evaluate(poly);
