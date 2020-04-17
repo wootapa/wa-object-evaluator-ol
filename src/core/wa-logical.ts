@@ -16,6 +16,10 @@ export abstract class Logical implements IEvaluatable {
         return operator;
     }
 
+    clear() {
+        this._operators = [];
+    }
+
     static fromJson(json: IJsonDump, classDict: ClassDict, parent: Parent): Logical {
         const logical = new classDict[json.type](parent) as Logical;
         json.operators.forEach(jsonOperator => {

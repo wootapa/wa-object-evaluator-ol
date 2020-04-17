@@ -9,9 +9,13 @@ export class Util {
     }
 
     static resolveObjectValue<T>(key: string, obj: ThingOrThingGetter<T>) {
-        return obj instanceof Function
+        const value = obj instanceof Function
             ? obj.apply(obj, [key])
             : Util.getDictValue(obj as IDictionary<T>, key);
+
+        return value instanceof Function
+            ? value.apply(obj)
+            : value;
     }
 
     static resolveCompareValue<T>(key: string, value: ThingOrThingGetter<T>): T {
