@@ -31,8 +31,13 @@ export class WAFeature {
         if (obj instanceof Geometry) {
             return new WAFeature(new Feature(obj)).assertSimple();
         }
-        if (obj instanceof Array && obj.length == 4) {
-            return new WAFeature(new Feature(fromExtent(obj as Extent))).assertSimple();
+        if (obj instanceof Array) {
+            if (obj.length == 2) {
+                return new WAFeature(new Feature(new Point(obj)));
+            }
+            if (obj.length == 4) {
+                return new WAFeature(new Feature(fromExtent(obj as Extent)));
+            }
         }
         if (obj instanceof Object) {
             return new WAFeature(formatJson.readFeature(obj)).assertSimple();
