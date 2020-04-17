@@ -118,5 +118,5 @@ and().eq('isKarateMan', true).done().evaluate(property => {
     if (property === 'isKarateMan') {
         return person.name.first === 'Nariyoshi' && person.name.last === 'Miyagi';
     }
-}); // => false
+}); // => true
 ```
