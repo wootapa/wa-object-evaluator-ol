@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 import { and } from '../src/waoe';
 
-const score = {
-    discus: 43,
-    javelin: 77,
-    hammer: 88
-};
-
 describe("getters", () => {
     it("should call object and comparison functions to resolve values", () => {
+        const score = {
+            discus: 43,
+            javelin: 77,
+            hammer: 88
+        };
+
         const result = and()
             // mean should be greater than lowest score
             .gt('mean', () => Math.min(...Object.values(score)))
@@ -21,6 +21,24 @@ describe("getters", () => {
                 }
                 return score[prop];
             });
+
+        expect(result).true;
+    });
+
+    it("should should resolve nested properties", () => {
+        const person = {
+            name: {
+                first: 'Nariyoshi',
+                last: 'Miyagi'
+            },
+            age: () => 60
+        };
+        
+        const result = and()
+            .gt('age', () => 50)
+            .eq('name.first', person.name.first)
+            .done()
+            .evaluate(person);
 
         expect(result).true;
     });
