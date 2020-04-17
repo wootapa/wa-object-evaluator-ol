@@ -7,4 +7,3 @@ const not = () => Builder.not();
 const fromJson = (json: IJsonDump) => Builder.fromJson(json);
 
 export { and, or, not, fromJson };
-export default and;
