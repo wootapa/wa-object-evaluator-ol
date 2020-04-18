@@ -1,6 +1,6 @@
 {
   "name": "@wootapa/object-evaluator-ol",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Extension of @wootapa/object-evaluator with ol spatial operators and filter output.",
   "main": "dist/waoe.cjs.js",
   "types": "dist/waoe.d.ts",
@@ -30,7 +30,10 @@
     "Logical",
     "Comparison",
     "Openlayers",
-    "OGC"
+    "OGC",
+    "CQL",
+    "GIS",
+    "Spatial"
   ],
   "author": "Andreas Petersson",
   "license": "MIT",
