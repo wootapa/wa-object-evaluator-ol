@@ -3,6 +3,8 @@ This is an extension of https://github.com/wootapa/wa-object-evaluator and evalu
 
 Avoid code bloat when filtering your client features or WFS/WMS requsts. Build your rules and apply them on client features, or output a CQL/XML filter for WFS/WMS requests.
 
+[Demo](https://i5u5c.csb.app/ "Demo")
+
 You'll need OpenLayers 6+ installed.
 
 ## Methods
