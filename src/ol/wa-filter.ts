@@ -52,7 +52,7 @@ export class WAFilter {
                 return `(${operator.getOperators().map(walk).join(' OR ')})`
             }
             if (operator instanceof LogicalNot) {
-                return `(${operator.getOperators().map(walk).join(' NOT ')})`
+                return `(NOT ${operator.getOperators().map(walk).join(' AND NOT ')})`
             }
         };
         return walk(logical);
