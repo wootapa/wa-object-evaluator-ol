@@ -1,30 +1,31 @@
 # Object Evaluator - Openlayers
-This is an extension of https://github.com/wootapa/wa-object-evaluator and evaluates objects of type ol/Feature. 
+This is an extension of https://github.com/wootapa/wa-object-evaluator and evaluates objects of type ol/Feature.
 
-Avoid code bloat when filtering your client features or WFS/WMS requsts. Build your rules and apply them on client features, or output a CQL/XML filter for WFS/WMS requests.
+Build rules and apply them on client features or output as a CQL/XML filter.
 
-[Demo](https://i5u5c.csb.app/ "Demo")
+[Demo](https://i5u5c.csb.app/)
 
-You'll need OpenLayers 6+ installed.
+## Dependencies
+OpenLayers 6+
 
 ## Methods
-On top of the existing library, the following is added.
+On top of the [existing](https://github.com/wootapa/wa-object-evaluator/blob/master/README.md) library, the following is added.
 
 ### Spatial operators
 * `intersects(property?, value)` - True if feature.get(property) intersects value. Property is optional and defaults to 'geometry'. Value can be an ol Feature/Geometry, wkt, geojson or an array(2=point, 4=extent=polygon). Chainable.
 
 
-### WFS/WMS output methods
+### Ogc filter methods
 * `toOgcCql()` - Outputs as CQL.
 * `toOgcXML()` - Outputs as XML.
 
 Don't forget to wrap in  `encodeURI` to avoid encoding issues.
 
 ## Objects
-Just as operator values it's not required to pass an ol/Feature as the evaluation object. However, if you want to compare anything else than geometries, an ol/Feature is required. That said, object can be an ol Feature/Geometry, wkt, geojson or an array(2=point, 4=extent=polygon).
+Just as operator values, it's not required to pass an ol/Feature as the evaluation object. However, if you want to compare anything else than geometries, an ol/Feature is required. That said, object can be an ol Feature/Geometry, wkt, geojson or an array(2=point, 4=extent=polygon).
 
 ## An example
-So maybe you have a bunch of featuers and Johnny asked you for all wells.
+So maybe you have a bunch of features and Johnny asked you for all wells.
 ```javascript
 const oe = and().eq('type', 'well').done();
 ```
@@ -48,7 +49,15 @@ const oe = and()
     .lte('drilled', new Date(1998,0))
     .intersects([13.8517, 55.9646, 14.3049, 56.1017])
     .done();
-
+```
+Apply on client features...
+```javascript
 const features = [...];
 const wells = features.filter(oe.evaluate);
 ```
+...or output as CQL/XML.
+```javascript
+const cql = oe.toOgcCql();
+const xml = oe.toOgcXml();
+```
+
