@@ -17,6 +17,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         LogicalOr,
         LogicalNot,
         ComparisonEquals,
+        ComparisonIsNull,
         ComparisonGreaterThan,
         ComparisonGreaterThanEquals,
         ComparisonLessThan,
