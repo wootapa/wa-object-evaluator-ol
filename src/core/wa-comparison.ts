@@ -23,7 +23,7 @@ export abstract class KeyValue {
 
     constructor(key: string, value: PrimitiveThing) {
         this._key = key;
-        this._value = Util.resolveCompareValue(this._key, value);
+        this._value = Util.resolveOperatorValue(value);
     }
 };
 
@@ -54,7 +54,7 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
 
     evaluate<PrimitiveThing>(obj: PrimitiveThing): boolean {
         // Get object and compare values
-        let objValue = Util.resolveObjectValue(this._key, obj);
+        let objValue = Util.resolveObjectValue<Primitive, PrimitiveThing>(this._key, obj);
 
         if (this instanceof ComparisonEquals) {
             return objValue === this._value;
