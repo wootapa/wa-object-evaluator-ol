@@ -6,7 +6,7 @@ import WKT from 'ol/format/WKT';
 import LineString from 'ol/geom/LineString';
 import Point from 'ol/geom/Point';
 import { fromExtent } from 'ol/geom/Polygon';
-import { and, fromJson } from '../src/waoe';
+import { and, fromJson } from '../src/waoe.ol';
 
 const polyExtent: Extent = [0, 0, 10, 10];
 const poly = fromExtent(polyExtent);

@@ -10,7 +10,7 @@ import { terser } from "rollup-plugin-terser";
 export default [
     // UMD for browser
     {
-        input: 'src/waoe.ts',
+        input: 'src/waoe.ol.ts',
         external: ['ol', 'ol/geom/Geometry', 'ol/geom/Polygon', 'ol/geom/LinearRing', 'ol/geom/Point', 'ol/format/WKT', 'ol/format/GeoJSON'],
         plugins: [
             cleaner({ targets: ['./dist/'] }),
@@ -29,7 +29,7 @@ export default [
         ],
         output: [
             {
-                file: pkg.browser, format: 'umd', sourcemap: true, name: 'waoe',
+                file: pkg.browser, format: 'umd', sourcemap: true, name: 'waoe.ol',
                 globals: {
                     'ol': 'ol',
                     'ol/geom/Geometry': 'ol.geom.Geometry',
@@ -44,7 +44,7 @@ export default [
     },
     // CommonJS for Node and ES for bundlers.
     {
-        input: 'src/waoe.ts',
+        input: 'src/waoe.ol.ts',
         external: ['ol', 'ol/geom/Geometry', 'ol/geom/Polygon', 'ol/geom/LinearRing', 'ol/geom/Point', 'ol/format/WKT', 'ol/format/GeoJSON'],
         plugins: [
             resolve(),
