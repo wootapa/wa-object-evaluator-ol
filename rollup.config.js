@@ -17,8 +17,7 @@ export default [
             terser({
                 keep_classnames: true,
                 keep_fnames: true
-            }),
-
+            })
         ],
         output: [
             { file: pkg.browser, format: 'umd', sourcemap: true, name: 'waoe' }
@@ -29,7 +28,10 @@ export default [
         input: 'src/waoe.ts',
         plugins: [
             typescript(),
-            terser()
+            terser({
+                keep_classnames: true,
+                keep_fnames: true
+            })
         ],
         output: [
             { file: pkg.main, format: 'cjs', sourcemap: true },
