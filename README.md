@@ -1,9 +1,20 @@
 # Object Evaluator - Openlayers
 This is an extension of https://github.com/wootapa/wa-object-evaluator and evaluates objects of type ol/Feature.
 
-Build rules and apply them on client features or output as a CQL/XML filter.
-
 [Demo](https://i5u5c.csb.app/)
+
+## Installation
+
+For node and bundlers (cjs and es):
+```shell
+$ npm install --save @wootapa/object-evaluator-ol
+```
+
+For legacy browsers (umd):
+```javascript
+<script src="https://unpkg.com/@wootapa/object-evaluator-ol"></script>
+// waoe.ol.and() ...
+```
 
 ## Dependencies
 OpenLayers 6+

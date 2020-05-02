@@ -24,8 +24,7 @@ export default [
             terser({
                 keep_classnames: true,
                 keep_fnames: true
-            }),
-
+            })
         ],
         output: [
             {
@@ -52,7 +51,10 @@ export default [
                 include: 'node_modules/**'
             }),
             typescript(),
-            terser()
+            terser({
+                keep_classnames: true,
+                keep_fnames: true
+            })
         ],
         output: [
             { file: pkg.main, format: 'cjs', sourcemap: true },
