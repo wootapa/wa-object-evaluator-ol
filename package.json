@@ -1,7 +1,7 @@
 {
   "name": "@wootapa/object-evaluator",
-  "version": "1.0.2",
-  "description": "Tests objects for true/false with logical and comparison operators using a builder pattern.",
+  "version": "1.0.3",
+  "description": "Tests objects with logical and comparison operators using a builder pattern.",
   "main": "dist/waoe.cjs.js",
   "types": "dist/waoe.d.ts",
   "module": "dist/waoe.esm.js",
@@ -12,7 +12,7 @@
     "build": "rollup -c"
   },
   "files": [
-    "dist"
+    "dist/**/*.{js,ts}"
   ],
   "browserslist": [
     "defaults",

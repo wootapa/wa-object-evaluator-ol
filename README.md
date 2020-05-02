@@ -1,8 +1,22 @@
 # Object Evaluator
-Tests your objects for true/false with logical and comparison operators using a builder pattern.
+Tests objects with logical and comparison operators using a builder pattern.
 
-Why?
-Because common if/else blocks is not very portable, and passing around a common set of rules as a single object just makes things easier at times. Since it's also serializable you could stuff it in localstorage, database or a webworker and have the same rules apply when you parse it back.
+- Easy to construct highly complex rules.
+- Combine many evaluators into one.
+- Serialize and store it for later, or push to a webworker.
+
+## Installation
+
+For node and bundlers (cjs and es):
+```shell
+$ npm install --save @wootapa/object-evaluator
+```
+
+For legacy browsers (umd):
+```javascript
+<script src="https://unpkg.com/@wootapa/object-evaluator"></script>
+// waoe.and() ...
+```
 
 ## Methods
 
@@ -33,7 +47,7 @@ Because common if/else blocks is not very portable, and passing around a common 
 * `any(property, values[])` - True if object[property] equals to any of values. Chainable.
 
 ### Evaluation
-* `evaluate(object)` - Evaluates the object to true/false. Dont forget to call `done()` before if you want to evaluate all operators.
+* `evaluate(object)` - Evaluates object. True if object passed all operators.
 
 ### Navigation
 * `up()` - Moves up to parent logical. Chainable.
@@ -70,9 +84,9 @@ In the end, this is the result.
 const oe = and()  // <- Will only return true if all children do
     .eq('category', 'comedy') // <- category must be comedy
     .gte('ranking', 6) // <- ranking must be greater than 6
-    .not() // <- Will only return true if children are false
+    .not() // <- Will only return true if all children are false
         .any('actor', ['Jim Carrey', 'Ben Stiller']) // <- actors must not be these
-        .up() // <- Moves back to and operator
+        .up() // <- Moves up one level to 'and' operator
     .eq('rating', 'G') // <- rating must be G
     .gt('year', new Date(1990,0)) // <- year must be greater than 1990
     .lt('year', new Date(2000,0)) // <- year must be less than 2000
