@@ -1,18 +1,18 @@
 # Object Evaluator
 Tests objects with logical and comparison operators using a builder pattern.
 
-- Easy to construct highly complex rules.
+- Easy to construct complex rules.
 - Combine many evaluators into one.
 - Serialize and store it for later, or push to a webworker.
 
 ## Installation
 
-For node and bundlers (cjs and es):
+New browsers, bundlers and node14+ (es):
 ```shell
 $ npm install --save @wootapa/object-evaluator
 ```
 
-For legacy browsers (umd):
+For old browsers and node12 (umd):
 ```javascript
 <script src="https://unpkg.com/@wootapa/object-evaluator"></script>
 // waoe.and() ...

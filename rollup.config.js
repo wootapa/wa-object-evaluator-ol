@@ -5,8 +5,9 @@ import sourceMaps from 'rollup-plugin-sourcemaps';
 import cleaner from 'rollup-plugin-cleaner';
 import { terser } from "rollup-plugin-terser";
 
+const banner = `/*! ${pkg.name} v${pkg.version} | author:${pkg.author} | license:${pkg.license} */`;
+
 export default [
-    // UMD for browser
     {
         input: 'src/waoe.ts',
         plugins: [
@@ -16,26 +17,13 @@ export default [
             sourceMaps(),
             terser({
                 keep_classnames: true,
-                keep_fnames: true
+                keep_fnames: true,
+                output: { comments: new RegExp(`^!${banner}$`) }
             })
         ],
         output: [
-            { file: pkg.browser, format: 'umd', sourcemap: true, name: 'waoe' }
+            { file: pkg.browser, format: 'umd', sourcemap: true, banner: banner, name: 'waoe' },
+            { file: pkg.module, format: 'es', sourcemap: true, banner: banner }
         ],
-    },
-    // CommonJS for Node and ES for bundlers.
-    {
-        input: 'src/waoe.ts',
-        plugins: [
-            typescript(),
-            terser({
-                keep_classnames: true,
-                keep_fnames: true
-            })
-        ],
-        output: [
-            { file: pkg.main, format: 'cjs', sourcemap: true },
-            { file: pkg.module, format: 'es', sourcemap: true }
-        ]
     }
 ];
