@@ -1,8 +1,8 @@
 {
   "name": "@wootapa/object-evaluator-ol",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Extension of @wootapa/object-evaluator with ol spatial operators and filter output.",
-  "main": "dist/waoe.ol.cjs.js",
+  "main": "dist/waoe.ol.umd.js",
   "types": "dist/waoe.ol.d.ts",
   "module": "dist/waoe.ol.esm.js",
   "browser": "dist/waoe.ol.umd.js",
@@ -12,7 +12,7 @@
     "build": "rollup -c"
   },
   "files": [
-    "dist/**/*.{js,ts}"
+    "dist/**/*.{js,map,ts}"
   ],
   "browserslist": [
     "defaults",

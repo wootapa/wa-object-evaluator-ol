@@ -5,12 +5,12 @@ This is an extension of https://github.com/wootapa/wa-object-evaluator and evalu
 
 ## Installation
 
-For node and bundlers (cjs and es):
+New browsers and bundlers (es):
 ```shell
 $ npm install --save @wootapa/object-evaluator-ol
 ```
 
-For legacy browsers (umd):
+Old browsers (umd):
 ```javascript
 <script src="https://unpkg.com/@wootapa/object-evaluator-ol"></script>
 // waoe.ol.and() ...

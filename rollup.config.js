@@ -5,10 +5,11 @@ import pkg from './package.json';
 import resolve from '@rollup/plugin-node-resolve';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
-import { terser } from "rollup-plugin-terser";
+import { terser } from 'rollup-plugin-terser';
+
+const banner = `/*! ${pkg.name} v${pkg.version} | author:${pkg.author} | license:${pkg.license} */`;
 
 export default [
-    // UMD for browser
     {
         input: 'src/waoe.ol.ts',
         external: ['ol', 'ol/geom/Geometry', 'ol/geom/Polygon', 'ol/geom/LinearRing', 'ol/geom/Point', 'ol/format/WKT', 'ol/format/GeoJSON'],
@@ -16,19 +17,18 @@ export default [
             cleaner({ targets: ['./dist/'] }),
             copy({ targets: [{ src: 'index.html', dest: 'dist' }] }),
             resolve(),
-            commonJS({
-                include: 'node_modules/**'
-            }),
+            commonJS(),
             typescript(),
             sourceMaps(),
             terser({
                 keep_classnames: true,
-                keep_fnames: true
+                keep_fnames: true,
+                output: { comments: new RegExp(`^!${banner}$`) }
             })
         ],
         output: [
             {
-                file: pkg.browser, format: 'umd', sourcemap: true, name: 'waoe.ol',
+                file: pkg.browser, format: 'umd', sourcemap: true, banner: banner, name: 'waoe.ol',
                 globals: {
                     'ol': 'ol',
                     'ol/geom/Geometry': 'ol.geom.Geometry',
@@ -38,27 +38,8 @@ export default [
                     'ol/format/WKT': 'ol.format.WKT',
                     'ol/format/GeoJSON': 'ol.format.GeoJSON'
                 }
-            }
+            },
+            { file: pkg.module, format: 'es', sourcemap: true, banner: banner }
         ],
-    },
-    // CommonJS for Node and ES for bundlers.
-    {
-        input: 'src/waoe.ol.ts',
-        external: ['ol', 'ol/geom/Geometry', 'ol/geom/Polygon', 'ol/geom/LinearRing', 'ol/geom/Point', 'ol/format/WKT', 'ol/format/GeoJSON'],
-        plugins: [
-            resolve(),
-            commonJS({
-                include: 'node_modules/**'
-            }),
-            typescript(),
-            terser({
-                keep_classnames: true,
-                keep_fnames: true
-            })
-        ],
-        output: [
-            { file: pkg.main, format: 'cjs', sourcemap: true },
-            { file: pkg.module, format: 'es', sourcemap: true }
-        ]
     }
 ];
