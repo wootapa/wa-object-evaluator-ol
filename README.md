@@ -21,43 +21,49 @@ For old browsers and node12 (umd):
 ## Methods
 
 ### Constructs
-* `and()` - Creates new builder with a root 'and' logical operator. See logical below. Chainable.
-* `or()` - Creates new builder with a root 'or' logical operator. See logical below. Chainable.
-* `not()` - Creates new builder with a root 'not' logical operator. See logical below. Chainable.
-* `fromJson(json)` - Creates new builder from a serialized builder. Chainable.
+* `and()` - Creates new builder with a root 'and' logical operator. See logical below.
+* `or()` - Creates new builder with a root 'or' logical operator. See logical below.
+* `not()` - Creates new builder with a root 'not' logical operator. See logical below.
+* `fromJson(json)` - Creates new builder from a serialized builder.
+* `define(alias, function)` - Defines a new operator. See example below.
 
 ### Logical operators
-* `and()` - True if all child operators are true. Chainable.
-* `or()` - True if one of the child operators are true. Chainable.
-* `not()` - True if all child operators are false. Chainable.
+* `and()` - True if all child operators are true.
+* `or()` - True if one of the child operators are true.
+* `not()` - True if all child operators are false.
 
 ### Comparison operators
-* `equals(property, value)` - True if object[property] equals to value. Chainable.
-* `isNull(property)` - True if object[property] is null or undefined. Chainable.
-* `greaterThan(property, value)` - True if object[property] is greater than value. Chainable.
-* `gt(property, value)` - same as above. Chainable.
-* `greaterThanEquals(property, value)` - True if object[property] is greater or equal to value. Chainable.
-* `gte(property, value)` - same as above. Chainable.
-* `lessThan(property, value)` - True if object[property] is less than value. Chainable.
-* `lt(property, value)` - same as above. Chainable.
-* `lessThanEquals(property, value)` - True if object[property] is less or equal to value. Chainable.
-* `lte(property, value)` - same as above. Chainable.
-* `like(property, value)` - True if object[property] is like value (case sensitive). Use * as wildcard. Chainable.
-* `ilike(property, value)` - True if object[property] is like value (case insensitive). Use * as wildcard. Chainable.
-* `any(property, values[])` - True if object[property] equals to any of values. Chainable.
+* `equals(key, value)` - True if object[key] equals to value. Alias=```eq```
+* `isNull(key)` - True if object[key] is null or undefined. Alias=```isnull```
+* `greaterThan(key, value)` - True if object[key] is greater than value. Alias=```gt```
+* `gt(key, value)` - shorthand for above.
+* `greaterThanEquals(key, value)` - True if object[key] is greater or equal to value. Alias=```gte```
+* `gte(key, value)` - shorthand for above.
+* `lessThan(key, value)` - True if object[key] is less than value. Alias=```lt```
+* `lt(key, value)` - shorthand for above.
+* `lessThanEquals(key, value)` - True if object[key] is less or equal to value. Alias=```lte```
+* `lte(key, value)` - shorthand for above.
+* `like(key, value)` - True if object[key] is like value (case sensitive). Use * as wildcard. Alias=```like```
+* `ilike(key, value)` - True if object[key] is like value (case insensitive). Use * as wildcard.
+* `any(key, values[])` - True if object[key] equals to any of the values.
 
 ### Evaluation
 * `evaluate(object)` - Evaluates object. True if object passed all operators.
 
 ### Navigation
-* `up()` - Moves up to parent logical. Chainable.
-* `done()` - Moves to root logical. Chainable.
+* `done()` - Moves up to root logical.
+* `up()` - Moves up to parent logical.
+* `down()` - Moves to first logical child.
+* `next()` - Moves to next logical sibling.
+* `prev()` - Moves to previous logical sibling.
 
 ### Other
 * `toJson()` - Serializes current level to json.
 * `clone()` - Returns a deeply cloned builder.
-* `clear()` - Clears all operators at current level and below. Chainable.
-* `addBuilder(builder)` - Adds another builder at current level. Chainable.
+* `clear()` - Clears all operators at current level and below.
+* `operator(alias, key, value?, opts?)` - Use operator by its alias.
+* `op(alias, key, value?, opts?)` - shorthand for above.
+* `addBuilder(builder)` - Adds another builder at current level.
 * `getKeysAndValues()` - Returns keys and values for all comparison operators. This can be useful when restoring state to something (forms etc). If the same key has been used multiple times an array of values are returned.
 
 
@@ -96,6 +102,27 @@ const movies = [...];
 const comedies = movies.filter(oe.evaluate);
 ```
 
+## Custom operator
+With ```define``` you can create your own operator.
+Supply an alias and a function that takes a value and returns a boolean.
+```javascript
+define('divisibleby2', (value: number) => value % 2 === 0);
+```
+Then use it with the ```operator``` (or shorthand ```op```) method.
+```javascript
+and().op('divisibleby2', 'age').done().evaluate({ age: 20 }); // => true
+```
+The operator will survive serialization, but can break or have sideffects if you depend on ```this``` or some other state that might not be there after deserialization.
+
+### Aliases
+While not as obvious as custom operators; most builtin operators can also be used this way. It can be useful in situations where you simply want the builder to figure out the operator for you.
+For example, the following is equivalent:
+```javascript
+and().eq('name', 'Foo').gte('age', 20).done();
+and().op('eq', 'name', 'Foo').op('gte', 'age', 20).done();
+```
+However, some operators cannot be used this way since they're not a dedicated operator. Ex, ```any``` is just an ```or``` with multiple ```eq``` children.
+
 ## Evaluating objects
 The evaluating object can be a plain dict, have nested properties...or be a function.
 So, given the following:
@@ -118,18 +145,18 @@ Property functions also resolves.
 and().gte('age', 50).done().evaluate(person); // => true
 ```
 
-You can also pass a function and resolve values anyway you want. Property is passed as argument.
+You can also pass a function and resolve values anyway you want. Key is passed as argument.
 ```javascript
-and().eq('name.first', 'Nariyoshi').done().evaluate(property => {
-    if (property === 'name.first') {
+and().eq('name.first', 'Nariyoshi').done().evaluate(key => {
+    if (key === 'name.first') {
         return person.name.first;
     }
 }); // => true
 ```
 Which then means you can have nonexistent properties if you want.
 ```javascript
-and().eq('isKarateMan', true).done().evaluate(property => {
-    if (property === 'isKarateMan') {
+and().eq('isKarateMan', true).done().evaluate(key => {
+    if (key === 'isKarateMan') {
         return person.name.first === 'Nariyoshi' && person.name.last === 'Miyagi';
     }
 }); // => true

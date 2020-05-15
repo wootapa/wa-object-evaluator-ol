@@ -1,7 +1,7 @@
 import { Primitive, IJsonDump, IEvaluatable, PrimitiveThing } from "./wa-contracts";
 import { Util } from "./wa-util";
 
-interface IComparisonOpts { 
+export interface IComparisonOpts {
     isDate?: boolean
 }
 export interface ILikeOptions extends IComparisonOpts {
@@ -28,6 +28,7 @@ export abstract class KeyValue {
 };
 
 export abstract class Comparison extends KeyValue implements IEvaluatable {
+    static alias: string;
     protected _opts?: IComparisonOpts;
 
     constructor(key: string, value: PrimitiveThing, opts?: IComparisonOpts) {
@@ -35,7 +36,7 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
         this._opts = opts;
 
         // opts is defined when constructing from stringified json
-        if (this._opts?.isDate && typeof(this._value == 'string')) {
+        if (this._opts?.isDate && typeof (this._value == 'string')) {
             this._value = new Date(Date.parse(this._value as string));
         }
         this._opts = { isDate: this._value instanceof Date, ...opts };
@@ -47,7 +48,7 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
 
     toJson(): IJsonDump {
         return {
-            type: this.constructor.name,
+            type: (this.constructor as any).alias,
             ctorArgs: [this._key, this._value, this._opts]
         };
     }
@@ -98,28 +99,41 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
 
 // Exports to be implemented in builder
 export interface IComparison<T> {
-    equals(property: string, value: PrimitiveThing): T
-    isNull(property: string): T
-    eq(property: string, value: PrimitiveThing): T
-    greaterThan(property: string, value: PrimitiveThing): T
-    gt(property: string, value: PrimitiveThing): T
-    greaterThanEquals(property: string, value: PrimitiveThing): T
-    gte(property: string, value: PrimitiveThing): T
-    lessThan(property: string, value: PrimitiveThing): T
-    lt(property: string, value: PrimitiveThing): T
-    lessThanEquals(property: string, value: PrimitiveThing): T
-    lte(property: string, value: PrimitiveThing): T
-    like(property: string, value: PrimitiveThing, options?: IComparisonOpts): T
-    ilike(property: string, value: PrimitiveThing, options?: IComparisonOpts): T
-    any(property: string, values: PrimitiveThing[]): T
+    equals(key: string, value: PrimitiveThing): T
+    isNull(key: string): T
+    eq(key: string, value: PrimitiveThing): T
+    greaterThan(key: string, value: PrimitiveThing): T
+    gt(key: string, value: PrimitiveThing): T
+    greaterThanEquals(key: string, value: PrimitiveThing): T
+    gte(key: string, value: PrimitiveThing): T
+    lessThan(key: string, value: PrimitiveThing): T
+    lt(key: string, value: PrimitiveThing): T
+    lessThanEquals(key: string, value: PrimitiveThing): T
+    lte(key: string, value: PrimitiveThing): T
+    like(key: string, value: PrimitiveThing, options?: IComparisonOpts): T
+    ilike(key: string, value: PrimitiveThing, options?: IComparisonOpts): T
+    any(key: string, values: PrimitiveThing[]): T
 }
-export class ComparisonEquals extends Comparison { }
-export class ComparisonIsNull extends Comparison { }
-export class ComparisonGreaterThan extends Comparison { }
-export class ComparisonGreaterThanEquals extends Comparison { }
-export class ComparisonLessThan extends Comparison { }
-export class ComparisonLessThanEquals extends Comparison { }
+export class ComparisonEquals extends Comparison {
+    static alias = 'eq'
+}
+export class ComparisonIsNull extends Comparison {
+    static alias = 'isnull'
+}
+export class ComparisonGreaterThan extends Comparison {
+    static alias = 'gt'
+}
+export class ComparisonGreaterThanEquals extends Comparison {
+    static alias = 'gte'
+}
+export class ComparisonLessThan extends Comparison {
+    static alias = 'lt'
+}
+export class ComparisonLessThanEquals extends Comparison {
+    static alias = 'lte'
+}
 export class ComparisonLike extends Comparison {
+    static alias = 'like'
     constructor(key: string, value: PrimitiveThing, opts?: ILikeOptions) {
         super(key, value, { matchCase: true, wildCard: '*', ...opts });
     };

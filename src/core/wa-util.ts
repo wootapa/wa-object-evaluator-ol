@@ -1,5 +1,4 @@
-import { IWalkFunction, IWalkLogicalFunction, IDictionary, ThingOrThingGetter } from "./wa-contracts";
-import { Logical } from "./wa-logical";
+import { IDictionary, ThingOrThingGetter } from "./wa-contracts";
 
 export class Util {
     static getDictValue = <T>(obj: IDictionary<T>, key: string): T => {
@@ -35,27 +34,5 @@ export class Util {
 
     static classOf<T>(o: T): any {
         return o.constructor;
-    }
-
-    static walk(logical: Logical, callBack: IWalkFunction): void {
-        callBack(logical);
-        logical.getOperators().forEach(operator => {
-            callBack(operator);
-            if (operator instanceof Logical) {
-                return Util.walk(operator, callBack);
-            }
-        });
-    }
-
-    static forEachLogical(logical: Logical, callBack: IWalkLogicalFunction) {
-        return Util.walk(logical, f => {
-            if (f instanceof Logical) {
-                callBack(f);
-            }
-        });
-    }
-
-    static forEach(logical: Logical, callBack: IWalkFunction) {
-        return Util.walk(logical, callBack);
     }
 }

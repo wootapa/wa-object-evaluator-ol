@@ -13,13 +13,13 @@ describe("getters", () => {
             // mean should be greater than lowest score
             .gt('mean', () => Math.min(...Object.values(score)))
             .done()
-            .evaluate((prop) => {
+            .evaluate((key) => {
                 // score contains no mean property, so we calculate it
-                if (prop == 'mean') {
+                if (key == 'mean') {
                     const allScores = Object.values(score);
                     return allScores.reduce((total, score) => total + score, 0) / allScores.length;
                 }
-                return score[prop];
+                return score[key];
             });
 
         expect(result).true;

@@ -13,6 +13,7 @@ export interface IJsonDump {
     type: string
     ctorArgs?: any[]
     isLogical?: boolean
+    isRuntime?: boolean
     operators?: IJsonDump[]
 }
 
@@ -20,16 +21,12 @@ export interface IToJson {
     toJson(): IJsonDump
 }
 
+export interface IRuntimeOperatorCallback {
+    (value: PrimitiveThing): boolean
+}
+
 export interface IEvaluatable {
     evaluate<T>(obj: ThingOrThingGetter<T>): boolean
-}
-
-export interface IWalkFunction {
-    (operator: Operator): void
-}
-
-export interface IWalkLogicalFunction {
-    (logical: Logical): void
 }
 
 export type ThingOrThingGetter<T> = T | IThingGetter<T> | IDictionary<T> | object;

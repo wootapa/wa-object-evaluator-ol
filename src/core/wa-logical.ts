@@ -1,7 +1,9 @@
 import { IEvaluatable, Parent, Operator, ClassDict, IJsonDump, ThingOrThingGetter } from "./wa-contracts";
+import { RuntimeOperator } from "./wa-runtime";
 
 export abstract class Logical implements IEvaluatable {
     private _operators: Operator[] = [];
+    static alias: string;
 
     constructor(private _parent: Parent) { }
 
@@ -26,6 +28,9 @@ export abstract class Logical implements IEvaluatable {
             if (jsonOperator.isLogical) {
                 return logical.add(Logical.fromJson(jsonOperator, classDict, logical));
             }
+            if (jsonOperator.isRuntime) {
+                return logical.add(RuntimeOperator.fromJson(jsonOperator, classDict));
+            }
             const clazz = classDict[jsonOperator.type];
             logical.add(new clazz(...jsonOperator.ctorArgs));
         });
@@ -34,45 +39,34 @@ export abstract class Logical implements IEvaluatable {
 
     toJson(): IJsonDump {
         return {
-            type: this.constructor.name,
+            type: (this.constructor as any).alias,
             isLogical: true,
             operators: this.getOperators().map(f => f.toJson())
         };
     }
 
     evaluate<T>(obj: ThingOrThingGetter<T>): boolean {
-        let result = false;
+        if (this._operators.length == 0) {
+            return true;
+        }
         if (this instanceof LogicalAnd) {
-            for (let i = 0; i < this._operators.length; i++) {
-                result = this._operators[i].evaluate(obj);
-                if (!result) {
-                    break;
-                }
-            }
-            return result;
+            return this._operators.every(op => op.evaluate(obj));
         }
         if (this instanceof LogicalOr) {
-            for (let i = 0; i < this._operators.length; i++) {
-                result = this._operators[i].evaluate(obj);
-                if (result) {
-                    break;
-                }
-            }
-            return result;
+            return this._operators.some(op => op.evaluate(obj));
         }
         if (this instanceof LogicalNot) {
-            for (let i = 0; i < this._operators.length; i++) {
-                result = this._operators[i].evaluate(obj);
-                if (result) {
-                    break;
-                }
-            }
-            return !result;
+            return this._operators.every(op => !op.evaluate(obj));
         }
-        return result;
     }
 }
 
-export class LogicalAnd extends Logical { }
-export class LogicalOr extends Logical { }
-export class LogicalNot extends Logical { }
+export class LogicalAnd extends Logical {
+    static alias = "and";
+}
+export class LogicalOr extends Logical {
+    static alias = "or";
+}
+export class LogicalNot extends Logical {
+    static alias = "not";
+}

@@ -16,8 +16,9 @@ export default [
             typescript(),
             sourceMaps(),
             terser({
-                keep_classnames: true,
-                keep_fnames: true,
+                mangle: {
+                    reserved: ['key', 'value', 'alias', 'func', 'opts']
+                },
                 output: { comments: new RegExp(`^!${banner}$`) }
             })
         ],

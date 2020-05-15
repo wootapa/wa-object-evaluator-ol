@@ -108,6 +108,17 @@ describe("less", () => {
     });
 });
 
+describe("any", () => {
+    it("should be any", () => {
+        const result = and()
+            .any('age', [10, 20, person.age, 30, 80 ])
+            .done()
+            .evaluate(person);
+
+        expect(result).true;
+    });
+});
+
 describe("like", () => {
     it("should contain word", () => {
         const result = and()
@@ -136,6 +147,21 @@ describe("like", () => {
     it("should contain words case insensitive and wildcards", () => {
         const result = and()
             .ilike('name', `mr*mi*gi*`)
+            .done()
+            .evaluate(person);
+
+        expect(result).true;
+    });
+    it("aliases", () => {
+        const result = and()
+            .operator('eq', 'age', person.age)
+            .operator('gt', 'age', person.age-1)
+            .operator('gte', 'age', person.age)
+            .operator('lt', 'age', person.age+1)
+            .operator('lte', 'age', person.age)
+            .operator('isnull', 'null', person.null)
+            .operator('like', 'name', 'Mr*')
+            .operator('like', 'name', 'mr*', { matchCase: false })
             .done()
             .evaluate(person);
 

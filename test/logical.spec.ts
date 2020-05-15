@@ -85,6 +85,20 @@ describe("or", () => {
 
         expect(result).true;
     });
+    it("should traverse and equal fname", () => {
+        const result = and()
+            .and().up()
+            .and()
+            .prev()
+            .next()
+            .up()
+            .down()
+            .eq('fname', person.fname)
+            .done()
+            .evaluate(person);
+
+        expect(result).true;
+    });
 });
 
 describe("not", () => {
