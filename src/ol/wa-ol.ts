@@ -6,6 +6,7 @@ import { FeatureThing } from "./wa-contracts";
 import { WAFeature } from "./wa-feature";
 
 export abstract class OpenLayersBase extends KeyValue implements IEvaluatable {
+    static alias: string;
     public feature: WAFeature;
 
     constructor(key: string, value: FeatureThing) {
@@ -25,7 +26,7 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable {
 
     toJson(): IJsonDump {
         return {
-            type: this.constructor.name,
+            type: (this.constructor as any).alias,
             ctorArgs: [this._key, this._value]
         };
     }
@@ -43,4 +44,6 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable {
 export interface IOpenLayers {
     intersects(value: FeatureThing): BuilderOl
 }
-export class OpenLayersIntersects extends OpenLayersBase { }
+export class OpenLayersIntersects extends OpenLayersBase {
+    static alias = 'intersects'
+}

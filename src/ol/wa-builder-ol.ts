@@ -13,7 +13,7 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOpenLayers
 
     protected getClassDict(): ClassDict {
         return {
-            OpenLayersIntersects
+            [OpenLayersIntersects.alias]: OpenLayersIntersects
         };
     }
 
