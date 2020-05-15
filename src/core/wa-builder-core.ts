@@ -67,12 +67,11 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     // Defines runtime operators
-    static define<T extends BuilderCoreBase<T>>(this: { new(): T }, alias: string, func: IRuntimeOperatorCallback) {
+    static define<T extends BuilderCoreBase<T>>(alias: string, func: IRuntimeOperatorCallback) {
         if (alias in clazzDict) {
             throw new Error(`Operator:${alias} already defined`);
         }
         clazzDict[alias] = new RuntimeOperatorDef(alias, func);
-        return this;
     }
 
     // Exports to json
