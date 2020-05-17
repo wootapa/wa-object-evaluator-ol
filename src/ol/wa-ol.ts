@@ -48,8 +48,9 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable, I
 
     evaluate<FeatureThing>(obj: FeatureThing): boolean {
         const evalFeature = WAFeature.factory(obj);
-        let result = false;
+        this._reporter.start();
 
+        let result = false;
         if (this instanceof OpenLayersIntersects) {
             result = evalFeature.intersects(this.feature);
         }

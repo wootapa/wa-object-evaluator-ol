@@ -1,6 +1,6 @@
 {
   "name": "@wootapa/object-evaluator-ol",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Extension of @wootapa/object-evaluator with ol spatial operators and filter output.",
   "main": "dist/waoe.ol.umd.js",
   "types": "dist/waoe.ol.d.ts",
@@ -67,7 +67,7 @@
     "ol": ">= 6.0.0"
   },
   "dependencies": {
-    "@turf/line-intersect": "^6.0.2",
+    "@turf/boolean-intersects": "^6.0.2",
     "performance-now": "^2.1.0"
   }
 }

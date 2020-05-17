@@ -1,4 +1,4 @@
-import lineIntersect from '@turf/line-intersect';
+import booleanIntersects from '@turf/boolean-intersects';
 import { Feature } from "ol";
 import { Extent } from 'ol/extent';
 import GeoJSON from 'ol/format/GeoJSON';
@@ -116,6 +116,6 @@ export class WAFeature {
             return feature.intersects(this);
         }
 
-        return lineIntersect(this.toGeoJsonObject() as any, feature.toGeoJsonObject() as any).features.length > 0;
+        return booleanIntersects(this.toGeoJsonObject() as any, feature.toGeoJsonObject() as any);
     }
 }
