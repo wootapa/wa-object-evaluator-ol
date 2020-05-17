@@ -7,7 +7,7 @@ export class WAFilter {
 
     private constructor() { }
 
-    static toOgcCql = (logical: Logical): string => {
+    static asOgcCql = (logical: Logical): string => {
         const walk = (operator: Operator): string => {
             // Openlayers
             if (operator instanceof OpenLayersIntersects) {
@@ -58,7 +58,7 @@ export class WAFilter {
         return walk(logical);
     }
 
-    static toOgcXml = (logical: Logical): string => {
+    static asOgcXml = (logical: Logical): string => {
         const walk = (operator: Operator): string => {
             // Openlayers
             if (operator instanceof OpenLayersIntersects) {

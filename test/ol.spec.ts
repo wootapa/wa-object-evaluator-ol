@@ -53,7 +53,7 @@ describe("ol", () => {
             .intersects(lineCrosses)
             .done();
 
-        const builder2 = fromJson(builder1.toJson());
+        const builder2 = fromJson(builder1.asJson());
 
         const result1 = builder1.evaluate(poly);
         const result2 = builder2.evaluate(poly);

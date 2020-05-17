@@ -1,5 +1,5 @@
-import { Primitive, IJsonDump, IEvaluatable, PrimitiveThing } from "./wa-contracts";
-import { Util } from "./wa-util";
+import { Primitive, IJsonDump, IEvaluatable, PrimitiveThing, IJson } from "./wa-contracts";
+import { Util, Reporter } from "./wa-util";
 
 export interface IComparisonOpts {
     isDate?: boolean
@@ -27,9 +27,10 @@ export abstract class KeyValue {
     }
 };
 
-export abstract class Comparison extends KeyValue implements IEvaluatable {
+export abstract class Comparison extends KeyValue implements IEvaluatable, IJson {
     static alias: string;
     protected _opts?: IComparisonOpts;
+    protected _reporter: Reporter;
 
     constructor(key: string, value: PrimitiveThing, opts?: IComparisonOpts) {
         super(key, value);
@@ -40,15 +41,23 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
             this._value = new Date(Date.parse(this._value as string));
         }
         this._opts = { isDate: this._value instanceof Date, ...opts };
+
+        this._reporter = new Reporter(`${this.getAlias()}:${this.key}`);
     }
 
     get opts() {
         return this._opts;
     }
 
-    toJson(): IJsonDump {
+    getAlias = () => (this.constructor as any).alias;
+
+    getReport = () => this._reporter.getReport();
+
+    resetReport = () => this._reporter.reset();
+
+    asJson(): IJsonDump {
         return {
-            type: (this.constructor as any).alias,
+            type: this.getAlias(),
             ctorArgs: [this._key, this._value, this._opts]
         };
     }
@@ -56,24 +65,26 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
     evaluate<PrimitiveThing>(obj: PrimitiveThing): boolean {
         // Get object and compare values
         let objValue = Util.resolveObjectValue<Primitive, PrimitiveThing>(this._key, obj);
+        this._reporter.start();
 
+        let result = false;
         if (this instanceof ComparisonEquals) {
-            return objValue === this._value;
+            result = objValue === this._value;
         }
         if (this instanceof ComparisonIsNull) {
-            return objValue === null || objValue === undefined;
+            result = objValue === null || objValue === undefined;
         }
         if (this instanceof ComparisonGreaterThan) {
-            return objValue > this._value;
+            result = objValue > this._value;
         }
         if (this instanceof ComparisonGreaterThanEquals) {
-            return objValue >= this._value;
+            result = objValue >= this._value;
         }
         if (this instanceof ComparisonLessThan) {
-            return objValue < this._value;
+            result = objValue < this._value;
         }
         if (this instanceof ComparisonLessThanEquals) {
-            return objValue <= this._value;
+            result = objValue <= this._value;
         }
         if (this instanceof ComparisonLike) {
             const opts = this._opts as ILikeOptions;
@@ -89,11 +100,11 @@ export abstract class Comparison extends KeyValue implements IEvaluatable {
                     const flags = !opts.matchCase ? 'i' : '';
                     this['valueRe'] = new RegExp(v, flags);
                 }
-                return this['valueRe'].test(o);
+                result = this['valueRe'].test(o);
             }
-            return false;
         }
-        return false;
+        this._reporter.stop(result);
+        return result;
     }
 }
 

@@ -27,8 +27,8 @@ On top of the [existing](https://github.com/wootapa/wa-object-evaluator/blob/mas
 
 
 ### Ogc filter methods
-* `toOgcCql()` - Outputs as CQL.
-* `toOgcXML()` - Outputs as XML.
+* `asOgcCql()` - Outputs as CQL.
+* `asOgcXML()` - Outputs as XML.
 
 Don't forget to wrap in  `encodeURI` to avoid encoding issues.
 
@@ -68,7 +68,7 @@ const wells = features.filter(oe.evaluate);
 ```
 ...or output as CQL/XML.
 ```javascript
-const cql = oe.toOgcCql();
-const xml = oe.toOgcXml();
+const cql = oe.asOgcCql();
+const xml = oe.asOgcXml();
 ```
 

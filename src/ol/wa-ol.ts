@@ -1,13 +1,15 @@
 
 import { KeyValue } from "../core/wa-comparison";
-import { IEvaluatable, IJsonDump } from "../core/wa-contracts";
+import { IEvaluatable, IJsonDump, IJson } from "../core/wa-contracts";
 import { BuilderOl } from "./wa-builder-ol";
 import { FeatureThing } from "./wa-contracts";
 import { WAFeature } from "./wa-feature";
+import { Reporter } from "../core/wa-util";
 
-export abstract class OpenLayersBase extends KeyValue implements IEvaluatable {
+export abstract class OpenLayersBase extends KeyValue implements IEvaluatable, IJson {
     static alias: string;
     public feature: WAFeature;
+    protected _reporter: Reporter;
 
     constructor(key: string, value: FeatureThing) {
         let feature = WAFeature.factory(value);
@@ -22,21 +24,38 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable {
 
         super(feature.getFeature().getGeometryName(), feature.toWkt());
         this.feature = feature;
+        this._reporter = new Reporter(`${this.getAlias()}:${this.key}`);
+
+    }
+    getAlias(): string {
+        return (this.constructor as any).alias;
     }
 
-    toJson(): IJsonDump {
+    getReport() {
+        return this._reporter.getReport();
+    }
+
+    resetReport() {
+        this._reporter.reset();
+    }
+
+    asJson(): IJsonDump {
         return {
-            type: (this.constructor as any).alias,
+            type: this.getAlias(),
             ctorArgs: [this._key, this._value]
         };
     }
 
     evaluate<FeatureThing>(obj: FeatureThing): boolean {
         const evalFeature = WAFeature.factory(obj);
+        let result = false;
 
         if (this instanceof OpenLayersIntersects) {
-            return evalFeature.intersects(this.feature);
+            result = evalFeature.intersects(this.feature);
         }
+
+        this._reporter.stop(result);
+        return result;
     }
 }
 

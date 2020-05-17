@@ -1,5 +1,5 @@
-import { Primitive, IJsonDump, IEvaluatable, IRuntimeOperatorCallback, IToJson, ClassDict } from "./wa-contracts";
-import { Util } from "./wa-util";
+import { Primitive, IJsonDump, IEvaluatable, IRuntimeOperatorCallback, IJson, ClassDict } from "./wa-contracts";
+import { Util, Reporter } from "./wa-util";
 import { KeyValue } from "./wa-comparison";
 
 export class RuntimeOperatorDef {
@@ -20,12 +20,14 @@ export class RuntimeOperatorDef {
     }
 }
 
-export class RuntimeOperator extends KeyValue implements IEvaluatable, IToJson {
-    _def: RuntimeOperatorDef;
+export class RuntimeOperator extends KeyValue implements IEvaluatable, IJson {
+    private _def: RuntimeOperatorDef;
+    private _reporter: Reporter;
 
     constructor(key: string, def: RuntimeOperatorDef) {
         super(key, def.func.toString())
         this._def = def;
+        this._reporter = new Reporter(`${this.getAlias()}:${this.key}`);
     }
 
     static fromJson(json: IJsonDump, classDict: ClassDict): RuntimeOperator {
@@ -39,16 +41,25 @@ export class RuntimeOperator extends KeyValue implements IEvaluatable, IToJson {
         return new RuntimeOperator(key, classDict[json.type]);
     }
 
-    toJson(): IJsonDump {
+    getAlias = () => this._def.alias;
+
+    getReport = () => this._reporter.getReport();
+
+    resetReport = () => this._reporter.reset();
+
+    asJson(): IJsonDump {
         return {
             isRuntime: true,
-            type: this._def.alias,
+            type: this.getAlias(),
             ctorArgs: [this.key, this._def.func.toString()]
         };
     }
 
     evaluate<PrimitiveThing>(obj: PrimitiveThing): boolean {
         let objValue = Util.resolveObjectValue<Primitive, PrimitiveThing>(this.key, obj);
-        return !!this._def.func.apply(this._def.func, [objValue]);
+        this._reporter.start();
+        const result = !!this._def.func.apply(this._def.func, [objValue]);
+        this._reporter.stop(result);
+        return result;
     }
 }

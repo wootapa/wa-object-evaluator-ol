@@ -32,6 +32,6 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOpenLayers
         return this;
     }
 
-    toOgcCql = () => WAFilter.toOgcCql(this._logical);
-    toOgcXml = () => WAFilter.toOgcXml(this._logical);
+    asOgcCql = () => WAFilter.asOgcCql(this._logical);
+    asOgcXml = () => WAFilter.asOgcXml(this._logical);
 }

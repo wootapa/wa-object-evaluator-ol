@@ -1,6 +1,6 @@
 {
   "name": "@wootapa/object-evaluator-ol",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Extension of @wootapa/object-evaluator with ol spatial operators and filter output.",
   "main": "dist/waoe.ol.umd.js",
   "types": "dist/waoe.ol.d.ts",
@@ -8,7 +8,7 @@
   "browser": "dist/waoe.ol.umd.js",
   "scripts": {
     "start": "npm run build",
-    "test": "mocha -r esm -r jsdom-global/register -r ts-node/register test/*.spec.ts",
+    "test": "mocha -r performance-now -r esm -r jsdom-global/register -r ts-node/register test/*.spec.ts",
     "build": "rollup -c"
   },
   "files": [
@@ -42,8 +42,8 @@
   },
   "homepage": "https://github.com/wootapa/wa-object-evaluator/tree/ol#readme",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^11.0.2",
-    "@rollup/plugin-node-resolve": "^7.1.1",
+    "@rollup/plugin-commonjs": "^11.1.0",
+    "@rollup/plugin-node-resolve": "^7.1.3",
     "@types/chai": "^4.2.9",
     "@types/mocha": "^7.0.1",
     "@types/ol": "^6.1.0",
@@ -54,7 +54,6 @@
     "mocha": "^7.1.0",
     "ol": "^6.2.1",
     "rollup": "^2.0.6",
-    "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-cleaner": "^1.0.0",
     "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-sourcemaps": "^0.5.0",
@@ -68,6 +67,7 @@
     "ol": ">= 6.0.0"
   },
   "dependencies": {
-    "@turf/line-intersect": "^6.0.2"
+    "@turf/line-intersect": "^6.0.2",
+    "performance-now": "^2.1.0"
   }
 }
