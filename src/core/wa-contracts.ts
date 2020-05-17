@@ -17,8 +17,21 @@ export interface IJsonDump {
     operators?: IJsonDump[]
 }
 
-export interface IToJson {
-    toJson(): IJsonDump
+export interface IJson {
+    asJson(): IJsonDump
+}
+
+export interface IReport {
+    id: string,
+    duration: number
+    truths: number
+    falses: number
+}
+export interface IReportSummary {
+    duration: number
+    truths: number
+    falses: number
+    details: IReport[]
 }
 
 export interface IRuntimeOperatorCallback {
@@ -26,12 +39,15 @@ export interface IRuntimeOperatorCallback {
 }
 
 export interface IEvaluatable {
+    getAlias(): string,
     evaluate<T>(obj: ThingOrThingGetter<T>): boolean
+    getReport(): IReport,
+    resetReport(): void
 }
 
 export type ThingOrThingGetter<T> = T | IThingGetter<T> | IDictionary<T> | object;
 export type Primitive = string | number | boolean | Date;
 export type PrimitiveThing = ThingOrThingGetter<Primitive>;
-export type Operator = IEvaluatable & IToJson;
+export type Operator = IEvaluatable & IJson;
 export type Parent = IBuilder | Logical;
 export type ClassDict = IDictionary<any>;

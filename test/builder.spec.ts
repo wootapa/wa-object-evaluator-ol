@@ -14,7 +14,7 @@ describe("builder", () => {
         .any('weight', [20, 30, 40])
         .done();
 
-    const builder2 = fromJson(builder1.toJson());
+    const builder2 = fromJson(builder1.asJson());
 
     it("builder and json-builder evaluates same", () => {
         const result1 = builder1.evaluate(person);
@@ -22,13 +22,13 @@ describe("builder", () => {
         expect(result1).eq(result2);
     });
     it("builder and json-builder same json", () => {
-        const result1 = JSON.stringify(builder1.toJson());
-        const result2 = JSON.stringify(builder2.toJson());
+        const result1 = JSON.stringify(builder1.asJson());
+        const result2 = JSON.stringify(builder2.asJson());
         expect(result1).eq(result2);
     });
     it("builder and clone evaluates same", () => {
-        const result1 = JSON.stringify(builder1.toJson());
-        const result2 = JSON.stringify(builder1.clone().toJson());
+        const result1 = JSON.stringify(builder1.asJson());
+        const result2 = JSON.stringify(builder1.clone().asJson());
         expect(result1).eq(result2);
     });
     it("addBuilder should evaluate new builder", () => {

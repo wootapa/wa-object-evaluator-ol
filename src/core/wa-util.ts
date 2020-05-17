@@ -1,4 +1,5 @@
-import { IDictionary, ThingOrThingGetter } from "./wa-contracts";
+import { IDictionary, ThingOrThingGetter, IReport } from "./wa-contracts";
+import now from 'performance-now';
 
 export class Util {
     static getDictValue = <T>(obj: IDictionary<T>, key: string): T => {
@@ -34,5 +35,41 @@ export class Util {
 
     static classOf<T>(o: T): any {
         return o.constructor;
+    }
+}
+
+export class Reporter {
+    private _start: number = 0;
+    private _duration: number = 0;
+    private _truthy = 0;
+    private _falsy = 0;
+
+    constructor(private _id: string) { }
+
+    start() {
+        this._start = now();
+        return this;
+    }
+
+    stop(result: boolean) {
+        this._duration += now() - this._start;
+        result ? this._truthy++ : this._falsy++;
+        return this.getReport();
+    }
+
+    reset() {
+        this._truthy = 0;
+        this._falsy = 0;
+        this._duration = 0;
+        return this;
+    }
+
+    getReport(): IReport {
+        return {
+            id: this._id,
+            duration: this._duration,
+            truths: this._truthy,
+            falses: this._falsy
+        };
     }
 }

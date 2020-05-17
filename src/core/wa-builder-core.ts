@@ -1,5 +1,5 @@
 import { LogicalAnd, LogicalOr, LogicalNot, Logical } from "./wa-logical";
-import { IDictionary, ClassDict, IJsonDump, PrimitiveThing, IRuntimeOperatorCallback, Operator } from "./wa-contracts";
+import { IDictionary, ClassDict, IJsonDump, PrimitiveThing, IRuntimeOperatorCallback, Operator, IReportSummary } from "./wa-contracts";
 import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue, ComparisonIsNull } from "./wa-comparison";
 import { Util } from "./wa-util";
 import { RuntimeOperatorDef, RuntimeOperator } from "./wa-runtime";
@@ -74,8 +74,51 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         clazzDict[alias] = new RuntimeOperatorDef(alias, func);
     }
 
-    // Exports to json
-    toJson = () => this._logical.toJson();
+    // Builder as json
+    asJson = () => this._logical.asJson();
+
+    // Builder as readable tree
+    asTree = () => {
+        const pad = '#';
+        const walk = (operator: Operator, indent = 0): string => {
+            if (operator instanceof Logical) {
+                return `${pad.repeat(indent)}${operator.getAlias()}↘
+                    ${operator.getOperators().map(op => walk(op, indent + operator.getAlias().length)).join('\n')}`;
+            }
+            const kv = operator as unknown as KeyValue;
+            return `${pad.repeat(indent)}${kv.key} ${operator.getAlias()} ${kv.value ?? ''}`;
+        }
+        return walk(this._logical)
+            .split('\n')
+            .map(v => v.trim().replace(new RegExp(pad, 'g'), ' '))
+            .join('\n');
+    }
+
+    getReport(): IReportSummary {
+        const report = this._logical.getReport();
+
+        const summary: IReportSummary = {
+            duration: report.duration,
+            truths: report.truths,
+            falses: report.falses,
+            details: [report]
+        };
+
+        this._logical.getOperatorsTree().forEach(op => {
+            const report = op.getReport();
+            summary.duration += report.duration;
+            summary.truths += report.truths;
+            summary.falses += report.falses;
+            summary.details.push(report);
+        });
+        return summary;
+    }
+
+    resetReport(): T {
+        this._logical.resetReport();
+        this._logical.getOperatorsTree().forEach(op => op.resetReport());
+        return this._this;
+    }
 
     // Evaluates object
     evaluate = (obj: PrimitiveThing) => this._logical.evaluate(obj);
@@ -140,7 +183,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
 
     // Clones builder
     clone(): T {
-        return Util.classOf(this._this).fromJson(this._this.toJson());
+        return Util.classOf(this._this).fromJson(this._this.asJson());
     }
 
     // Adds another builder

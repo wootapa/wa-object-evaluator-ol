@@ -24,48 +24,54 @@ For old browsers and node12 (umd):
 * `and()` - Creates new builder with a root 'and' logical operator. See logical below.
 * `or()` - Creates new builder with a root 'or' logical operator. See logical below.
 * `not()` - Creates new builder with a root 'not' logical operator. See logical below.
-* `fromJson(json)` - Creates new builder from a serialized builder.
+* `fromJson(json)` - Creates new builder from a serialized builder. Chainable.
 * `define(alias, function)` - Defines a new operator. See example below.
 
 ### Logical operators
-* `and()` - True if all child operators are true.
-* `or()` - True if one of the child operators are true.
-* `not()` - True if all child operators are false.
+* `and()` - True if all child operators are true. Chainable.
+* `or()` - True if one of the child operators are true. Chainable.
+* `not()` - True if all child operators are false. Chainable.
 
 ### Comparison operators
-* `equals(key, value)` - True if object[key] equals to value. Alias=```eq```
-* `isNull(key)` - True if object[key] is null or undefined. Alias=```isnull```
-* `greaterThan(key, value)` - True if object[key] is greater than value. Alias=```gt```
+* `equals(key, value)` - True if object[key] equals to value. Alias=```eq```. Chainable.
+* `isNull(key)` - True if object[key] is null or undefined. Alias=```isnull```. Chainable.
+* `greaterThan(key, value)` - True if object[key] is greater than value. Alias=```gt```. Chainable.
 * `gt(key, value)` - shorthand for above.
-* `greaterThanEquals(key, value)` - True if object[key] is greater or equal to value. Alias=```gte```
+* `greaterThanEquals(key, value)` - True if object[key] is greater or equal to value. Alias=```gte```. Chainable.
 * `gte(key, value)` - shorthand for above.
-* `lessThan(key, value)` - True if object[key] is less than value. Alias=```lt```
+* `lessThan(key, value)` - True if object[key] is less than value. Alias=```lt```. Chainable. 
 * `lt(key, value)` - shorthand for above.
-* `lessThanEquals(key, value)` - True if object[key] is less or equal to value. Alias=```lte```
+* `lessThanEquals(key, value)` - True if object[key] is less or equal to value. Alias=```lte```. Chainable.
 * `lte(key, value)` - shorthand for above.
-* `like(key, value)` - True if object[key] is like value (case sensitive). Use * as wildcard. Alias=```like```
-* `ilike(key, value)` - True if object[key] is like value (case insensitive). Use * as wildcard.
-* `any(key, values[])` - True if object[key] equals to any of the values.
+* `like(key, value)` - True if object[key] is like value (case sensitive). Use * as wildcard. Alias=```like```. Chainable.
+* `ilike(key, value)` - True if object[key] is like value (case insensitive). Use * as wildcard. Chainable.
+* `any(key, values[])` - True if object[key] equals to any of the values.  Chainable.
 
 ### Evaluation
 * `evaluate(object)` - Evaluates object. True if object passed all operators.
 
-### Navigation
-* `done()` - Moves up to root logical.
-* `up()` - Moves up to parent logical.
-* `down()` - Moves to first logical child.
-* `next()` - Moves to next logical sibling.
-* `prev()` - Moves to previous logical sibling.
+### Logical traversal
+* `done()` - Moves up to root logical. Chainable.
+* `up()` - Moves up to parent logical. Chainable.
+* `down()` - Moves to first logical child. Chainable.
+* `next()` - Moves to next logical sibling. Chainable.
+* `prev()` - Moves to previous logical sibling. Chainable.
 
 ### Other
-* `toJson()` - Serializes current level to json.
+* `asJson()` - Serializes to json. Restore with ```fromJson```.
+* `asTree()` - Returns a more human readable tree.
 * `clone()` - Returns a deeply cloned builder.
-* `clear()` - Clears all operators at current level and below.
-* `operator(alias, key, value?, opts?)` - Use operator by its alias.
+* `clear()` - Clears all operators and below. Chainable.
+* `operator(alias, key, value?, opts?)` - Use operator by its alias. Chainable.
 * `op(alias, key, value?, opts?)` - shorthand for above.
-* `addBuilder(builder)` - Adds another builder at current level.
+* `addBuilder(builder)` - Adds another builder. Chainable.
+* `getReport()` - Returns a report with statistics. Useful for finding the breaking operator or bottlenecks.
+* `resetReport()` - Reset statistics. Chainable.
 * `getKeysAndValues()` - Returns keys and values for all comparison operators. This can be useful when restoring state to something (forms etc). If the same key has been used multiple times an array of values are returned.
 
+### Remember .done()
+Builder methods are executed from the current logical level. That means you might not get the result you expected as you
+might have a deep hierachy. Remember to first call ```done()``` which moves you to the root logical.
 
 ## An example
 So maybe you have a bunch of movies and you want some good comedies.

@@ -1,6 +1,8 @@
 import typescript from 'rollup-plugin-typescript2';
-import copy from 'rollup-plugin-copy'
+import commonJS from '@rollup/plugin-commonjs';
+import copy from 'rollup-plugin-copy';
 import pkg from './package.json';
+import resolve from '@rollup/plugin-node-resolve';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import cleaner from 'rollup-plugin-cleaner';
 import { terser } from "rollup-plugin-terser";
@@ -13,6 +15,8 @@ export default [
         plugins: [
             cleaner({ targets: ['./dist/'] }),
             copy({ targets: [{ src: 'index.html', dest: 'dist' }] }),
+            resolve(),
+            commonJS(),
             typescript(),
             sourceMaps(),
             terser({
@@ -23,7 +27,9 @@ export default [
             })
         ],
         output: [
-            { file: pkg.browser, format: 'umd', sourcemap: true, banner: banner, name: 'waoe' },
+            {
+                file: pkg.browser, format: 'umd', sourcemap: true, banner: banner, name: 'waoe'
+            },
             { file: pkg.module, format: 'es', sourcemap: true, banner: banner }
         ],
     }
