@@ -1,6 +1,6 @@
 {
   "name": "@wootapa/object-evaluator",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Tests objects with logical and comparison operators using a builder pattern.",
   "main": "dist/waoe.umd.js",
   "types": "dist/waoe.d.ts",
@@ -8,7 +8,7 @@
   "browser": "dist/waoe.umd.js",
   "scripts": {
     "start": "npm run build",
-    "test": "mocha --require performance-now --require ts-node/register test/*.spec.ts",
+    "test": "mocha -r performance-now -r ts-node/register test/*.spec.ts",
     "build": "rollup -c"
   },
   "files": [

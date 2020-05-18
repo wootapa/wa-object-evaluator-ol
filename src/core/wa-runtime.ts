@@ -41,11 +41,17 @@ export class RuntimeOperator extends KeyValue implements IEvaluatable, IJson {
         return new RuntimeOperator(key, classDict[json.type]);
     }
 
-    getAlias = () => this._def.alias;
+    getAlias() {
+        return this._def.alias;
+    }
 
-    getReport = () => this._reporter.getReport();
+    getReport() {
+        return this._reporter.getReport();
+    }
 
-    resetReport = () => this._reporter.reset();
+    resetReport() {
+        this._reporter.reset();
+    }
 
     asJson(): IJsonDump {
         return {
