@@ -1,6 +1,6 @@
 {
   "name": "@wootapa/object-evaluator-ol",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Extension of @wootapa/object-evaluator with ol spatial operators and filter output.",
   "main": "dist/waoe.ol.umd.js",
   "types": "dist/waoe.ol.d.ts",

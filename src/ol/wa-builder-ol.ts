@@ -17,7 +17,7 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOpenLayers
         };
     }
 
-    evaluate = (obj: FeatureThing) => {
+    evaluate(obj: FeatureThing) {
         const olFeature = WAFeature.factory(obj).getFeature();
         const olPropertyGetter = olFeature.get.bind(olFeature);
         return this._logical.evaluate(olPropertyGetter);
@@ -32,6 +32,11 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOpenLayers
         return this;
     }
 
-    asOgcCql = () => WAFilter.asOgcCql(this._logical);
-    asOgcXml = () => WAFilter.asOgcXml(this._logical);
+    asOgcCql() {
+        return WAFilter.asOgcCql(this._logical);
+    }
+
+    asOgcXml() {
+        return WAFilter.asOgcXml(this._logical);
+    }
 }

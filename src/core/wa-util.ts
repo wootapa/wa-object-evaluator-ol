@@ -41,8 +41,8 @@ export class Util {
 export class Reporter {
     private _start: number = 0;
     private _duration: number = 0;
-    private _truthy = 0;
-    private _falsy = 0;
+    private _truths = 0;
+    private _falses = 0;
 
     constructor(private _id: string) { }
 
@@ -53,13 +53,13 @@ export class Reporter {
 
     stop(result: boolean) {
         this._duration += now() - this._start;
-        result ? this._truthy++ : this._falsy++;
+        result ? this._truths++ : this._falses++;
         return this.getReport();
     }
 
     reset() {
-        this._truthy = 0;
-        this._falsy = 0;
+        this._truths = 0;
+        this._falses = 0;
         this._duration = 0;
         return this;
     }
@@ -68,8 +68,8 @@ export class Reporter {
         return {
             id: this._id,
             duration: this._duration,
-            truths: this._truthy,
-            falses: this._falsy
+            truths: this._truths,
+            falses: this._falses
         };
     }
 }

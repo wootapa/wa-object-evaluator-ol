@@ -58,17 +58,29 @@ export class WAFeature {
         return this;
     }
 
-    getGeometry = () => this._feature.getGeometry();
+    getGeometry() {
+        return this._feature.getGeometry();;
+    }
 
-    getFeature = () => this._feature;
+    getFeature() {
+        return this._feature;
+    }
 
-    isMulti = () => this.getGeometry().getType().includes('Multi');
+    isMulti() {
+        return this.getGeometry().getType().includes('Multi');
+    }
 
-    isPolygon = () => this.getGeometry().getType() === 'Polygon';
+    isPolygon() {
+        return this.getGeometry().getType() === 'Polygon';
+    }
 
-    isLineString = () => this.getGeometry().getType() === 'LineString';
+    isLineString() {
+        return this.getGeometry().getType() === 'LineString';
+    }
 
-    isPoint = () => this.getGeometry().getType() === 'Point';
+    isPoint() {
+        return this.getGeometry().getType() === 'Point';
+    }
 
     isExtent(): boolean {
         if (!this.isPolygon()) {
@@ -79,18 +91,24 @@ export class WAFeature {
         return poly.getArea() === polyExtent.getArea();
     }
 
-    toWkt = () => formatWkt.writeGeometry(this.getGeometry());
+    toWkt() {
+        return formatWkt.writeGeometry(this.getGeometry());
+    }
 
-    toGeoJson = () => formatJson.writeGeometry(this.getGeometry());
+    toGeoJson() {
+        return formatJson.writeGeometry(this.getGeometry());
+    }
 
-    toGeoJsonObject = () => formatJson.writeGeometryObject(this.getFeature().getGeometry());
+    toGeoJsonObject() {
+        return formatJson.writeGeometryObject(this.getFeature().getGeometry());
+    }
 
     toGml() {
         if (this.isPoint()) {
             return `<gml:Point><gml:pos>${(this.getGeometry() as Point).getFlatCoordinates().join(' ')}</gml:pos></gml:Point>`;
         }
         if (this.isLineString()) {
-            return `<gml:LineString><gml:posList>${(this.getGeometry() as LineString).getFlatCoordinates().join(' ')}</gml:posList></gml:Point>`;
+            return `<gml:LineString><gml:posList>${(this.getGeometry() as LineString).getFlatCoordinates().join(' ')}</gml:posList></gml:LineString>`;
         }
         if (this.isPolygon()) {
             const rings = (this.getGeometry() as Polygon).getLinearRings().map((ring, idx) => {

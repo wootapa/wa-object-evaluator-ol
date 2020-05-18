@@ -22,7 +22,7 @@ export default [
             sourceMaps(),
             terser({
                 mangle: {
-                    reserved: ['key', 'value', 'alias', 'func', 'opts']
+                    reserved: ['key', 'value', 'alias', 'func', 'opts', 'obj', 'json', 'builder']
                 },
                 output: { comments: new RegExp(`^!${banner}$`) }
             })

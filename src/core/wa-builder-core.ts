@@ -75,7 +75,9 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     // Builder as json
-    asJson = () => this._logical.asJson();
+    asJson() {
+        return this._logical.asJson();
+    }
 
     // Builder as readable tree
     asTree = () => {
@@ -94,6 +96,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
             .join('\n');
     }
 
+    // Return statistics report
     getReport(): IReportSummary {
         const report = this._logical.getReport();
 
@@ -114,6 +117,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return summary;
     }
 
+    // Reset statistics reports
     resetReport(): T {
         this._logical.resetReport();
         this._logical.getOperatorsTree().forEach(op => op.resetReport());
@@ -121,7 +125,9 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     // Evaluates object
-    evaluate = (obj: PrimitiveThing) => this._logical.evaluate(obj);
+    evaluate(obj: PrimitiveThing) {
+        return this._logical.evaluate(obj);
+    }
 
     // Destroys logical operators
     clear(): T {

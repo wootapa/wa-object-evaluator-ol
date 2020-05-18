@@ -11,7 +11,9 @@ export abstract class Logical implements IEvaluatable, IJson {
         this._reporter = new Reporter(`${this.getAlias()}`);
     }
 
-    getParent = () => this._parent;
+    getParent() {
+        return this._parent;
+    };
 
     getOperators(): Operator[] {
         return this._operators;
@@ -57,11 +59,17 @@ export abstract class Logical implements IEvaluatable, IJson {
         return logical;
     }
 
-    getAlias = () => (this.constructor as any).alias;
+    getAlias() {
+        return (this.constructor as any).alias;
+    }
 
-    getReport = () => this._reporter.getReport();
+    getReport() {
+        return this._reporter.getReport();
+    }
 
-    resetReport = () => this._reporter.reset();
+    resetReport() {
+        this._reporter.reset();
+    }
 
     asJson(): IJsonDump {
         return {

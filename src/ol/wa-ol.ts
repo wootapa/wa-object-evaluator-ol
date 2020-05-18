@@ -8,7 +8,7 @@ import { Reporter } from "../core/wa-util";
 
 export abstract class OpenLayersBase extends KeyValue implements IEvaluatable, IJson {
     static alias: string;
-    public feature: WAFeature;
+    protected _feature: WAFeature;
     protected _reporter: Reporter;
 
     constructor(key: string, value: FeatureThing) {
@@ -23,10 +23,14 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable, I
         }
 
         super(feature.getFeature().getGeometryName(), feature.toWkt());
-        this.feature = feature;
+        this._feature = feature;
         this._reporter = new Reporter(`${this.getAlias()}:${this.key}`);
-
     }
+
+    get feature() {
+        return this._feature;
+    }
+
     getAlias(): string {
         return (this.constructor as any).alias;
     }
@@ -52,7 +56,7 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable, I
 
         let result = false;
         if (this instanceof OpenLayersIntersects) {
-            result = evalFeature.intersects(this.feature);
+            result = evalFeature.intersects(this._feature);
         }
 
         this._reporter.stop(result);

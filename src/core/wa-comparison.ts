@@ -49,11 +49,17 @@ export abstract class Comparison extends KeyValue implements IEvaluatable, IJson
         return this._opts;
     }
 
-    getAlias = () => (this.constructor as any).alias;
+    getAlias() {
+        return (this.constructor as any).alias;
+    }
 
-    getReport = () => this._reporter.getReport();
+    getReport() {
+        return this._reporter.getReport();
+    }
 
-    resetReport = () => this._reporter.reset();
+    resetReport() {
+        this._reporter.reset();
+    }
 
     asJson(): IJsonDump {
         return {
