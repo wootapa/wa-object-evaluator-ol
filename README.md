@@ -1,5 +1,5 @@
 # Object Evaluator - Openlayers
-This is an extension of https://github.com/wootapa/wa-object-evaluator and evaluates objects of type ol/Feature.
+This builds on top of https://github.com/wootapa/wa-object-evaluator with spatial operators for Openlayers and OGC query output.
 
 [Demo](https://i5u5c.csb.app/)
 
@@ -23,17 +23,17 @@ OpenLayers 6+
 On top of the [existing](https://github.com/wootapa/wa-object-evaluator/blob/master/README.md) library, the following is added.
 
 ### Spatial operators
-* `intersects(property?, value)` - True if feature.get(property) intersects value. Property is optional and defaults to 'geometry'. Value can be an ol Feature/Geometry, wkt, geojson or an array(2=point, 4=extent=polygon). Chainable.
+* `intersects(value)` - True when object intersects value. Value can be an ol Feature/Geometry, wkt, geojson or an array(2=point, 4=extent=polygon). Chainable.
+* ...more to come
 
-
-### Ogc filter methods
+### Ogc query/filter methods
 * `asOgcCql()` - Outputs as CQL.
 * `asOgcXML()` - Outputs as XML.
 
-Don't forget to wrap in  `encodeURI` to avoid encoding issues.
+By default the name of the geometry is `geometry`. Control it by passing an ol/Feature with a [geometryName](https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html#setGeometryName). Also, dont forget to wrap in  `encodeURI` to avoid encoding issues.
 
 ## Objects
-Just as operator values, it's not required to pass an ol/Feature as the evaluation object. However, if you want to compare anything else than geometries, an ol/Feature is required. That said, object can be an ol Feature/Geometry, wkt, geojson or an array(2=point, 4=extent=polygon).
+Just as operator values, it's not strictly required to pass an ol/Feature as the evaluation object; but you'll need it if you also want to compare attributes with the standard operators. That said, object can be an ol Feature/Geometry, wkt, geojson or an array(2=point, 4=extent=polygon).
 
 ## An example
 So maybe you have a bunch of features and Johnny asked you for all wells.

@@ -17,25 +17,52 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOpenLayers
         };
     }
 
+    /**
+     * Evaluates featurething.
+     * 
+     * @param obj - The featurething to evaluate
+     * 
+     * @returns True if object passed all child operators
+     */
     evaluate(obj: FeatureThing) {
-        const olFeature = WAFeature.factory(obj).getFeature();
-        const olPropertyGetter = olFeature.get.bind(olFeature);
-        return this._logical.evaluate(olPropertyGetter);
+        // To support all base operators, we need a dict or they can't resolve values
+        const olFeature = WAFeature.factory(obj).getOlFeature();
+        const olFeatureProps = olFeature.getProperties();
+
+        // To support custom geometrynames we add a little helper property
+        olFeatureProps[WAFeature.OBJECT_PIGGYBACK] = olFeature.getGeometryName();
+        return this._logical.evaluate(olFeatureProps);
     }
 
-    intersects(value: FeatureThing): BuilderOl;
-    intersects(propertyOrValue: string | FeatureThing, value?: FeatureThing): BuilderOl {
-        this._logical.add(value
-            ? new OpenLayersIntersects(propertyOrValue as string, value)
-            : new OpenLayersIntersects(WAFeature.DEFAULT_GEOMETRYNAME, propertyOrValue)
-        );
+    /**
+     * Adds an `intersects` operator (True when featurething intersects).
+     * 
+     * @param value - The featurething to compare
+     * 
+     * @returns Builder
+     */
+    intersects(value: FeatureThing): BuilderOl {
+        this._logical.add(new OpenLayersIntersects(value));
         return this;
     }
 
+    /**
+     * Returns builder as an OGC CQL query.
+     * 
+     * @returns builder as OGC CQL
+     */
     asOgcCql() {
         return WAFilter.asOgcCql(this._logical);
     }
 
+    /**
+     * Returns builder as an OGC XML query.
+     * 
+     * @remarks
+     * Wrap in encodeURI to avoid encoding issues
+     * 
+     * @returns builder as OGC XML
+     */
     asOgcXml() {
         return WAFilter.asOgcXml(this._logical);
     }

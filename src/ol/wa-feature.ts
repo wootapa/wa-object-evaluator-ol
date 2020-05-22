@@ -17,6 +17,7 @@ export class WAFeature {
     constructor(private _feature: Feature) { }
 
     static readonly DEFAULT_GEOMETRYNAME = 'geometry';
+    static readonly OBJECT_PIGGYBACK = 'waoe_geometry';
 
     static factory = (obj: FeatureThing): WAFeature => {
         if (obj instanceof Function) {
@@ -40,6 +41,10 @@ export class WAFeature {
             }
         }
         if (obj instanceof Object) {
+            if (WAFeature.OBJECT_PIGGYBACK in obj) {
+                const geometryKey = obj[WAFeature.OBJECT_PIGGYBACK];
+                return WAFeature.factory(obj[geometryKey]);
+            }
             return new WAFeature(formatJson.readFeature(obj)).assertSimple();
         }
         if (typeof (obj) === 'string') {
@@ -62,7 +67,7 @@ export class WAFeature {
         return this._feature.getGeometry();;
     }
 
-    getFeature() {
+    getOlFeature() {
         return this._feature;
     }
 
@@ -100,7 +105,7 @@ export class WAFeature {
     }
 
     toGeoJsonObject() {
-        return formatJson.writeGeometryObject(this.getFeature().getGeometry());
+        return formatJson.writeGeometryObject(this.getOlFeature().getGeometry());
     }
 
     toGml() {

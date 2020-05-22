@@ -25,7 +25,7 @@ export class RuntimeOperator extends KeyValue implements IEvaluatable, IJson {
     private _reporter: Reporter;
 
     constructor(key: string, def: RuntimeOperatorDef) {
-        super(key, def.func.toString())
+        super(key, '(custom operator)')
         this._def = def;
         this._reporter = new Reporter(`${this.getAlias()}:${this.key}`);
     }

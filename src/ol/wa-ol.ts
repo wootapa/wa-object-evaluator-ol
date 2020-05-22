@@ -11,18 +11,19 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable, I
     protected _feature: WAFeature;
     protected _reporter: Reporter;
 
-    constructor(key: string, value: FeatureThing) {
-        let feature = WAFeature.factory(value);
+    constructor(keyOrValue: string | FeatureThing, value?: FeatureThing) {
+        const geometryName = (value ? keyOrValue : WAFeature.DEFAULT_GEOMETRYNAME) as string;
+        const feature = value ? WAFeature.factory(value) : WAFeature.factory(keyOrValue);
 
-        // If we have a key, we should set the geomtryname
-        if (key && key !== WAFeature.DEFAULT_GEOMETRYNAME) {
-            const olFeature = feature.getFeature();
-            olFeature.set(key, olFeature.getGeometry());
+        // If key is not default, set it.
+        if (geometryName && geometryName !== WAFeature.DEFAULT_GEOMETRYNAME) {
+            const olFeature = feature.getOlFeature();
+            olFeature.set(geometryName, olFeature.getGeometry());
             olFeature.unset(olFeature.getGeometryName());
-            olFeature.setGeometryName(key);
+            olFeature.setGeometryName(geometryName);
         }
 
-        super(feature.getFeature().getGeometryName(), feature.toWkt());
+        super(feature.getOlFeature().getGeometryName(), feature.toWkt());
         this._feature = feature;
         this._reporter = new Reporter(`${this.getAlias()}:${this.key}`);
     }

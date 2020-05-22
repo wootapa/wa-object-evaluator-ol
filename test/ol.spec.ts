@@ -5,7 +5,7 @@ import GeoJSON from 'ol/format/GeoJSON';
 import WKT from 'ol/format/WKT';
 import LineString from 'ol/geom/LineString';
 import Point from 'ol/geom/Point';
-import { fromExtent } from 'ol/geom/Polygon';
+import Polygon, { fromExtent } from 'ol/geom/Polygon';
 import { and, fromJson } from '../src/waoe.ol';
 
 const polyExtent: Extent = [0, 0, 10, 10];
@@ -26,6 +26,18 @@ describe("ol", () => {
             .intersects(polyJson)
             .done()
             .evaluate(polyFeature);
+
+        expect(result).true;
+    });
+
+    it("nondefault geometryname", () => {
+        const polyFeatureCustomName = new Feature({ 'the_geom': poly });
+        polyFeatureCustomName.setGeometryName('the_geom');
+
+        const result = and()
+            .intersects(polyFeatureCustomName)
+            .done()
+            .evaluate(polyFeatureCustomName);
 
         expect(result).true;
     });
