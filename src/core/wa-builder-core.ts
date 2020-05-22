@@ -20,6 +20,7 @@ let clazzDict: ClassDict = {
 
 export interface IBuilder { }
 export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements IBuilder, IComparison<T> {
+
     // Root logical operator.
     protected _logical: Logical;
 
@@ -40,7 +41,12 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         clazzDict = { ...clazzDict, ...this._this.getClassDict() };
     }
 
-    // Static and preferable logical constructors
+    /**
+     * Creates new builder from JSON.
+     *
+     * @param json - JSON (or stringified) output from a builder
+     * @returns Builder
+     */
     static fromJson<T extends BuilderCoreBase<T>>(this: { new(): T }, json: IJsonDump | string) {
         const builder = new this();
         const jsonParsed = typeof (json) === 'string' ? JSON.parse(json) : json;
@@ -48,25 +54,45 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return builder;
     }
 
+    /**
+     * Creates a new builder with a root `and` operator (True when all child operators are true).
+     *
+     * @returns Builder
+     */
     static and<T extends BuilderCoreBase<T>>(this: { new(): T }) {
         const builder = new this();
         builder._logical = new LogicalAnd(builder);
         return builder;
     }
 
+    /**
+     * Creates a new builder with a root `or` operator (True when any child operator is true).
+     *
+     * @returns Builder
+     */
     static or<T extends BuilderCoreBase<T>>(this: { new(): T }) {
         const builder = new this();
         builder._logical = new LogicalOr(builder);
         return builder;
     }
 
+    /**
+     * Creates a new builder with a root `not` operator (True when all child operators are false).
+     *
+     * @returns Builder
+     */
     static not<T extends BuilderCoreBase<T>>(this: { new(): T }) {
         const builder = new this();
         builder._logical = new LogicalNot(builder);
         return builder;
     }
 
-    // Defines runtime operators
+    /**
+     * Defines a custom operator.
+     *
+     * @param alias - The name of the operator
+     * @param func - The function to be called
+     */
     static define<T extends BuilderCoreBase<T>>(alias: string, func: IRuntimeOperatorCallback) {
         if (alias in clazzDict) {
             throw new Error(`Operator:${alias} already defined`);
@@ -74,13 +100,30 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         clazzDict[alias] = new RuntimeOperatorDef(alias, func);
     }
 
-    // Builder as json
+    /**
+     * Returns array of all operator aliases.
+     * 
+     * @returns All operator aliases
+     */
+    static getOperatorAlias() {
+        return Object.keys(clazzDict);
+    }
+
+    /**
+     * Serializes builder as JSON.
+     * 
+     * @returns builder as JSON
+     */
     asJson() {
         return this._logical.asJson();
     }
 
-    // Builder as readable tree
-    asTree = () => {
+    /**
+     * Returns builder as a human readable tree.
+     * 
+     * @returns builder as a human readable tree
+     */
+    asTree() {
         const pad = '#';
         const walk = (operator: Operator, indent = 0): string => {
             if (operator instanceof Logical) {
@@ -96,7 +139,11 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
             .join('\n');
     }
 
-    // Return statistics report
+    /**
+     * Returns a report with evaluation statistics.
+     * 
+     * @returns A report with evaluation statistics
+     */
     getReport(): IReportSummary {
         const report = this._logical.getReport();
 
@@ -117,25 +164,43 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return summary;
     }
 
-    // Reset statistics reports
+    /**
+     * Resets report statistics.
+     * 
+     * @returns Builder
+     */
     resetReport(): T {
         this._logical.resetReport();
         this._logical.getOperatorsTree().forEach(op => op.resetReport());
         return this._this;
     }
 
-    // Evaluates object
+    /**
+     * Evaluates object.
+     * 
+     * @param obj - The object to evaluate
+     * 
+     * @returns True if object passed all child operators
+     */
     evaluate(obj: PrimitiveThing) {
         return this._logical.evaluate(obj);
     }
 
-    // Destroys logical operators
+    /**
+     * Clears all operators in current logical and below.
+     * 
+     * @returns Builder
+     */
     clear(): T {
         this._logical.clear();
         return this._this;
     }
 
-    // Moves to root logical
+    /**
+     * Moves to root logical.
+     * 
+     * @returns Builder
+     */
     done(): T {
         while (this._logical.getParent() !== this._this) {
             this.up();
@@ -143,7 +208,11 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return this._this;
     }
 
-    // Moves up to parent logical, or builder itself if at root level.
+    /**
+     * Moves to parent logical (if any).
+     * 
+     * @returns Builder
+     */
     up(): T {
         if (this._logical.getParent() === this._this) {
             return this._this;
@@ -152,7 +221,11 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return this._this;
     }
 
-    // Moves down to first child logical.
+    /**
+     * Moves to first child logical.
+     * 
+     * @returns Builder
+     */
     down(): T {
         const childLogical = this._logical.getOperators().find(op => op instanceof Logical) as Logical;
         if (childLogical) {
@@ -161,7 +234,11 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return this._this;
     }
 
-    // Moves to next sibling logical
+    /**
+     * Moves to next logical sibling (if any).
+     * 
+     * @returns Builder
+     */
     next(): T {
         const parent = this._logical.getParent();
         if (parent instanceof Logical) {
@@ -174,7 +251,11 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return this._this;
     }
 
-    // Moves to previous sibling logical
+    /**
+     * Moves to previous logical sibling (if any).
+     * 
+     * @returns Builder
+     */
     prev(): T {
         const parent = this._logical.getParent();
         if (parent instanceof Logical) {
@@ -187,18 +268,30 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return this._this;
     }
 
-    // Clones builder
+    /**
+     * Returns a clone of builder.
+     * 
+     * @returns A new builder
+     */
     clone(): T {
         return Util.classOf(this._this).fromJson(this._this.asJson());
     }
 
-    // Adds another builder
+    /**
+     * Adds another builder.
+     * 
+     * @returns Builder
+     */
     addBuilder(builder: T): T {
         this._logical.add(builder._logical);
         return this._this;
     }
 
-    // Returns keys with values. Useful when working with json dumps.
+    /**
+     * Returns keys and values for non logical operators.
+     * 
+     * @returns Keys and values for non logical operators
+     */
     getKeysAndValues() {
         let dict = {};
         const walk = (operators: Operator[]) => {
@@ -219,72 +312,207 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return dict;
     }
 
-    static getOperatorAlias() {
-        return Object.keys(clazzDict);
-    }
-
-    // Logical operators
+    /**
+     * Adds a new `and` logical operator (True when all child operators are true).
+     * 
+     * @returns Builder
+     */
     and(): T {
         this._logical = this._logical.add(new LogicalAnd(this._logical)) as Logical;
         return this._this;
     }
 
+    /**
+     * Adds a new `or` logical operator (True when any child operator is true).
+     * 
+     * @returns Builder
+     */
     or(): T {
         this._logical = this._logical.add(new LogicalOr(this._logical)) as Logical;
         return this._this;
     }
 
+    /**
+     * Adds a new `not` logical operator (True when all child operators are false).
+     * 
+     * @returns Builder
+     */
     not(): T {
         this._logical = this._logical.add(new LogicalNot(this._logical)) as Logical;
         return this._this;
     }
 
-    // Comparison operators
+    /**
+     * Adds an `equals` operator (True when value is same).
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
     equals(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonEquals(key, value));
         return this._this;
     }
-    eq = this.equals;
 
+    /**
+     * Adds an `equals` operator (True when value is same).
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
+    eq(key: string, value: PrimitiveThing) {
+        return this.equals(key, value);
+    }
+
+    /**
+     * Adds an `isnull` operator (True when value is null or undefined).
+     * 
+     * @param key - The key/property to evaluate
+     * 
+     * @returns Builder
+     */
     isNull(key: string): T {
         this._logical.add(new ComparisonIsNull(key, null));
         return this._this;
     }
 
+    /**
+     * Adds an `gt` operator (True when value is greater).
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
     greaterThan(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonGreaterThan(key, value));
         return this._this;
     }
-    gt = this.greaterThan;
 
+    /**
+     * Adds an `gt` operator (True when value is greater).
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
+    gt(key: string, value: PrimitiveThing) {
+        return this.greaterThan(key, value);
+    }
+
+    /**
+     * Adds an `gte` operator (True when value is greater or equal).
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
     greaterThanEquals(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonGreaterThanEquals(key, value));
         return this._this;
     }
-    gte = this.greaterThanEquals;
 
+    /**
+     * Adds an `gte` operator (True when value is greater or equal).
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
+    gte(key: string, value: PrimitiveThing) {
+        return this.greaterThanEquals(key, value);
+    }
+
+    /**
+     * Adds an `lt` operator (True when value is less).
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
     lessThan(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLessThan(key, value));
         return this._this;
     }
-    lt = this.lessThan;
 
+    /**
+     * Adds an `lt` operator (True when value is less).
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
+    lt(key: string, value: PrimitiveThing) {
+        return this.lessThan(key, value);
+    }
+
+    /**
+     * Adds an `lte` operator (True when value is less or equal).
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
     lessThanEquals(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLessThanEquals(key, value));
         return this._this;
     }
-    lte = this.lessThanEquals;
 
+    /**
+     * Adds an `lte` operator (True when value is less or equal).
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
+    lte(key: string, value: PrimitiveThing) {
+        return this.lessThanEquals(key, value);
+    }
+
+    /**
+     * Adds a `like` operator (True when value matches). Case sensitive.
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value/pattern to compare
+     * 
+     * @returns Builder
+     */
     like(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLike(key, value, { matchCase: true }));
         return this._this;
     }
 
+    /**
+     * Adds an `like` operator (True when value matches). Case insensitive.
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value/pattern to compare
+     * 
+     * @returns Builder
+     */
     ilike(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLike(key, value, { matchCase: false }));
         return this._this;
     }
 
+    /**
+     * Adds an `or` operator with one or more `equals` operators (True when any value is same)
+     * 
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
     any(key: string, values: PrimitiveThing[]): T {
         if (values.length) {
             const or = this._logical.add(new LogicalOr(this._logical)) as Logical;
@@ -293,7 +521,15 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         return this._this;
     }
 
-    // Any operator by its alias
+    /**
+     * Adds an operator by its alias
+     * 
+     * @param alias - Alias of the operator
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
     operator(alias: string, key: string, value?: PrimitiveThing, opts?: any): T {
         if (!(alias in clazzDict)) {
             throw new Error(`Invalid operator alias:${alias}`);
@@ -306,7 +542,19 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
         this._logical.add(operator);
         return this._this;
     }
-    op = this.operator;
+
+    /**
+     * Adds an operator by its alias
+     * 
+     * @param alias - Alias of the operator
+     * @param key - The key/property to evaluate
+     * @param value - The value to compare
+     * 
+     * @returns Builder
+     */
+    op(alias: string, key: string, value?: PrimitiveThing, opts?: any): T {
+        return this.operator(alias, key, value, opts);
+    }
 }
 
 export class BuilderCore extends BuilderCoreBase<BuilderCore> {
