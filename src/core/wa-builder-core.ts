@@ -280,6 +280,8 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Adds another builder.
      * 
+     * @param builder - The builder to add
+     * 
      * @returns Builder
      */
     addBuilder(builder: T): T {

@@ -21,9 +21,9 @@ For old browsers and node12 (umd):
 ## Methods
 
 ### Constructs
-* `and()` - Creates new builder with a root 'and' logical operator. See logical below.
-* `or()` - Creates new builder with a root 'or' logical operator. See logical below.
-* `not()` - Creates new builder with a root 'not' logical operator. See logical below.
+* `and()` - Creates new builder with a root ```and``` logical operator. See logical below.
+* `or()` - Creates new builder with a root ```or``` logical operator. See logical below.
+* `not()` - Creates new builder with a root ```not``` logical operator. See logical below.
 * `fromJson(json)` - Creates new builder from a serialized builder. Chainable.
 * `define(alias, function)` - Defines a new operator. See example below.
 
@@ -34,6 +34,7 @@ For old browsers and node12 (umd):
 
 ### Comparison operators
 * `equals(key, value)` - True if object[key] equals to value. Alias=```eq```. Chainable.
+* `eq(key, value)` - shorthand for above.
 * `isNull(key)` - True if object[key] is null or undefined. Alias=```isnull```. Chainable.
 * `greaterThan(key, value)` - True if object[key] is greater than value. Alias=```gt```. Chainable.
 * `gt(key, value)` - shorthand for above.
