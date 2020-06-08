@@ -1,6 +1,6 @@
-import { Primitive, IJsonDump, IEvaluatable, IRuntimeOperatorCallback, IJson, ClassDict } from "./wa-contracts";
-import { Util, Reporter } from "./wa-util";
 import { KeyValue } from "./wa-comparison";
+import { ClassDict, IEvaluatable, IJson, IJsonDump, IRuntimeOperatorCallback, Primitive } from "./wa-contracts";
+import { Reporter, Util } from "./wa-util";
 
 export class RuntimeOperatorDef {
     private _alias: string;

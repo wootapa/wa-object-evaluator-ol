@@ -1,6 +1,6 @@
 {
   "name": "@wootapa/object-evaluator",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Tests objects with logical and comparison operators using a builder pattern.",
   "main": "dist/waoe.umd.js",
   "types": "dist/waoe.d.ts",

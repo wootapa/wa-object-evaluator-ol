@@ -1,4 +1,4 @@
-import { IEvaluatable, Parent, Operator, ClassDict, IJsonDump, ThingOrThingGetter, IJson } from "./wa-contracts";
+import { ClassDict, IEvaluatable, IJson, IJsonDump, Operator, Parent, ThingOrThingGetter } from "./wa-contracts";
 import { RuntimeOperator } from "./wa-runtime";
 import { Reporter } from "./wa-util";
 
