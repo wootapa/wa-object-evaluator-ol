@@ -1,5 +1,5 @@
-import { IDictionary, ThingOrThingGetter, IReport } from "./wa-contracts";
 import now from 'performance-now';
+import { IDictionary, IReport, ThingOrThingGetter } from "./wa-contracts";
 
 export class Util {
     static getDictValue = <T>(obj: IDictionary<T>, key: string): T => {

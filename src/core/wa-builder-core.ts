@@ -1,8 +1,8 @@
-import { LogicalAnd, LogicalOr, LogicalNot, Logical } from "./wa-logical";
-import { IDictionary, ClassDict, IJsonDump, PrimitiveThing, IRuntimeOperatorCallback, Operator, IReportSummary } from "./wa-contracts";
-import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue, ComparisonIsNull } from "./wa-comparison";
+import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonIsNull, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue } from "./wa-comparison";
+import { ClassDict, IBuilderOpts, IDictionary, IJsonDump, IReportSummary, IRuntimeOperatorCallback, Operator, PrimitiveThing } from "./wa-contracts";
+import { Logical, LogicalAnd, LogicalNot, LogicalOr } from "./wa-logical";
+import { RuntimeOperator, RuntimeOperatorDef } from "./wa-runtime";
 import { Util } from "./wa-util";
-import { RuntimeOperatorDef, RuntimeOperator } from "./wa-runtime";
 
 // Dict with class constructors. Used when creating from a json dump.
 let clazzDict: ClassDict = {
@@ -33,6 +33,12 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     // Provided by subclass so we know how to create unknown operators
     protected abstract getClassDict(): ClassDict;
 
+    // Provides configuration for subclass when restoring from json
+    protected abstract setConfiguration(config: IBuilderOpts): void;
+
+    // Gets configuration from subclass when serializing to json
+    protected abstract getConfiguration(): IBuilderOpts;
+
     constructor() {
         this._this = this.getBuilder();
         // Use AND by default. Overridden in static constructors.
@@ -48,8 +54,9 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @returns Builder
      */
     static fromJson<T extends BuilderCoreBase<T>>(this: { new(): T }, json: IJsonDump | string) {
+        const jsonParsed = (typeof (json) === 'string' ? JSON.parse(json) : json) as IJsonDump;
         const builder = new this();
-        const jsonParsed = typeof (json) === 'string' ? JSON.parse(json) : json;
+        builder.setConfiguration(jsonParsed.builderOpts);
         builder._logical = Logical.fromJson(jsonParsed, clazzDict, builder);
         return builder;
     }
@@ -114,8 +121,8 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * 
      * @returns builder as JSON
      */
-    asJson() {
-        return this._logical.asJson();
+    asJson(): IJsonDump {
+        return { ...this._logical.asJson(), builderOpts: this.getConfiguration() };
     }
 
     /**
@@ -315,7 +322,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds a new `and` logical operator (True when all child operators are true).
+     * Returns true when all child operators are true.
      * 
      * @returns Builder
      */
@@ -325,7 +332,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds a new `or` logical operator (True when any child operator is true).
+     * Returns true when at least one child operator is true.
      * 
      * @returns Builder
      */
@@ -335,7 +342,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds a new `not` logical operator (True when all child operators are false).
+     * Returns true when all child operators are false.
      * 
      * @returns Builder
      */
@@ -345,7 +352,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `equals` operator (True when value is same).
+     * Returns true when object[key] is equal to value.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value to compare
@@ -358,7 +365,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `equals` operator (True when value is same).
+     * Returns true when object[key] is equal to value.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value to compare
@@ -370,7 +377,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `isnull` operator (True when value is null or undefined).
+     * Returns true when object[key] is null or undefined.
      * 
      * @param key - The key/property to evaluate
      * 
@@ -382,7 +389,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `gt` operator (True when value is greater).
+     * Returns true when object[key] is greater than value.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value to compare
@@ -395,7 +402,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `gt` operator (True when value is greater).
+     * Returns true when object[key] is greater than value.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value to compare
@@ -407,7 +414,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `gte` operator (True when value is greater or equal).
+     * Returns true when object[key] is greater or equal to value.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value to compare
@@ -420,7 +427,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `gte` operator (True when value is greater or equal).
+     * Returns true when object[key] is greater or equal to value.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value to compare
@@ -432,7 +439,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `lt` operator (True when value is less).
+     * Returns true when object[key] is less than value.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value to compare
@@ -445,7 +452,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `lt` operator (True when value is less).
+     * Returns true when object[key] is less than value.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value to compare
@@ -457,7 +464,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `lte` operator (True when value is less or equal).
+     * Returns true when object[key] is less or equal to value.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value to compare
@@ -470,7 +477,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `lte` operator (True when value is less or equal).
+     * Returns true when object[key] is less or equal to value.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value to compare
@@ -482,7 +489,8 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds a `like` operator (True when value matches). Case sensitive.
+     * Returns true when object[key] is similar to value. 
+     * Case sensitive.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value/pattern to compare
@@ -495,7 +503,8 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `like` operator (True when value matches). Case insensitive.
+     * Returns true when object[key] is similar to value. 
+     * Case insensitive.
      * 
      * @param key - The key/property to evaluate
      * @param value - The value/pattern to compare
@@ -508,10 +517,10 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Adds an `or` operator with one or more `equals` operators (True when any value is same)
+     * Returns true when object[key] is found in values.
      * 
      * @param key - The key/property to evaluate
-     * @param value - The value to compare
+     * @param values - The values to compare
      * 
      * @returns Builder
      */
@@ -550,7 +559,8 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * 
      * @param alias - Alias of the operator
      * @param key - The key/property to evaluate
-     * @param value - The value to compare
+     * @param value - Optional value to compare
+     * @param opts - Optional operator options
      * 
      * @returns Builder
      */
@@ -560,9 +570,17 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
 }
 
 export class BuilderCore extends BuilderCoreBase<BuilderCore> {
+
+    protected setConfiguration(config: IBuilderOpts): void { }
+
+    protected getConfiguration(): IBuilderOpts {
+        return {};
+    }
+
     protected getClassDict(): IDictionary<Function> {
         return {};
     }
+
     protected getBuilder(): BuilderCore {
         return this;
     }

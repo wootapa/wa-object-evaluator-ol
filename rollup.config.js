@@ -12,7 +12,7 @@ const banner = `/*! ${pkg.name} v${pkg.version} | author:${pkg.author} | license
 export default [
     {
         input: 'src/waoe.ol.ts',
-        external: ['ol', 'ol/geom/Geometry', 'ol/geom/Polygon', 'ol/geom/LinearRing', 'ol/geom/Point', 'ol/format/WKT', 'ol/format/GeoJSON'],
+        external: ['ol', 'ol/proj', 'ol/extent', 'ol/geom/Geometry', 'ol/geom/Polygon', 'ol/geom/LineString', 'ol/geom/LinearRing', 'ol/geom/Point', 'ol/format/WKT', 'ol/format/GeoJSON'],
         plugins: [
             cleaner({ targets: ['./dist/'] }),
             copy({ targets: [{ src: 'index.html', dest: 'dist' }] }),
@@ -32,8 +32,11 @@ export default [
                 file: pkg.browser, format: 'umd', sourcemap: true, banner: banner, name: 'waoe.ol',
                 globals: {
                     'ol': 'ol',
+                    'ol/proj': 'ol.proj',
+                    'ol/extent': 'ol.extent',
                     'ol/geom/Geometry': 'ol.geom.Geometry',
                     'ol/geom/Polygon': 'ol.geom.Polygon',
+                    'ol/geom/LineString': 'ol.geom.LineString',
                     'ol/geom/LinearRing': 'ol.geom.LinearRing',
                     'ol/geom/Point': 'ol.geom.Point',
                     'ol/format/WKT': 'ol.format.WKT',

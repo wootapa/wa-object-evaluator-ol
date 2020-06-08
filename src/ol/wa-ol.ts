@@ -1,35 +1,38 @@
 
 import { KeyValue } from "../core/wa-comparison";
-import { IEvaluatable, IJsonDump, IJson } from "../core/wa-contracts";
-import { BuilderOl } from "./wa-builder-ol";
-import { FeatureThing } from "./wa-contracts";
-import { WAFeature } from "./wa-feature";
+import { IEvaluatable, IJson, IJsonDump } from "../core/wa-contracts";
 import { Reporter } from "../core/wa-util";
+import { BuilderOl } from "./wa-builder-ol";
+import { FeatureThing, IDistanceOpts, IOlOpts } from "./wa-contracts";
+import { WAFeature } from "./wa-feature";
 
-export abstract class OpenLayersBase extends KeyValue implements IEvaluatable, IJson {
+// Base class for all operators
+export abstract class OlBase extends KeyValue implements IEvaluatable, IJson {
     static alias: string;
     protected _feature: WAFeature;
+    protected _opts: IOlOpts;
     protected _reporter: Reporter;
 
-    constructor(keyOrValue: string | FeatureThing, value?: FeatureThing) {
-        const geometryName = (value ? keyOrValue : WAFeature.DEFAULT_GEOMETRYNAME) as string;
-        const feature = value ? WAFeature.factory(value) : WAFeature.factory(keyOrValue);
+    constructor(value: FeatureThing, opts: IOlOpts) {
+        const feature = WAFeature.factory(value);
 
-        // If key is not default, set it.
-        if (geometryName && geometryName !== WAFeature.DEFAULT_GEOMETRYNAME) {
-            const olFeature = feature.getOlFeature();
-            olFeature.set(geometryName, olFeature.getGeometry());
-            olFeature.unset(olFeature.getGeometryName());
-            olFeature.setGeometryName(geometryName);
+        // Defined when restoring from json
+        if (opts.geometryName) {
+            feature.setGeometryName(opts.geometryName);
         }
 
-        super(feature.getOlFeature().getGeometryName(), feature.toWkt());
+        super(feature.getGeometryName(), feature.asWkt());
         this._feature = feature;
+        this._opts = { geometryName: feature.getGeometryName(), ...opts };
         this._reporter = new Reporter(`${this.getAlias()}:${this.key}`);
     }
 
     get feature() {
         return this._feature;
+    }
+
+    get opts() {
+        return this._opts;
     }
 
     getAlias(): string {
@@ -47,7 +50,7 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable, I
     asJson(): IJsonDump {
         return {
             type: this.getAlias(),
-            ctorArgs: [this._key, this._value]
+            ctorArgs: [this.value, this.opts]
         };
     }
 
@@ -56,8 +59,27 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable, I
         this._reporter.start();
 
         let result = false;
-        if (this instanceof OpenLayersIntersects) {
-            result = evalFeature.intersects(this._feature);
+        const projCode = this._opts.builderOpts.projCode;
+
+        if (this instanceof OlIntersects) {
+            result = this._feature.intersects(evalFeature, projCode);
+        }
+        else if (this instanceof OlDisjoint) {
+            result = !this._feature.intersects(evalFeature, projCode);
+        }
+        else if (this instanceof OlContains) {
+            result = evalFeature.contains(this.feature, projCode);
+        }
+        else if (this instanceof OlWithin) {
+            result = this._feature.contains(evalFeature, projCode);
+        }
+        else if (this instanceof OlDistanceWithin) {
+            const opts = this._opts as IDistanceOpts;
+            result = this._feature.dwithin(evalFeature, opts.distance, projCode);
+        }
+        else if (this instanceof OlDistanceBeyond) {
+            const opts = this._opts as IDistanceOpts;
+            result = !this._feature.dwithin(evalFeature, opts.distance, projCode);
         }
 
         this._reporter.stop(result);
@@ -65,10 +87,35 @@ export abstract class OpenLayersBase extends KeyValue implements IEvaluatable, I
     }
 }
 
-// Exports to be implemented in builder
-export interface IOpenLayers {
-    intersects(value: FeatureThing): BuilderOl
+// To be implemented in builder
+export interface IOlOperators {
+    intersects(value: FeatureThing): BuilderOl,
+    disjoint(value: FeatureThing): BuilderOl,
+    contains(value: FeatureThing): BuilderOl,
+    within(value: FeatureThing): BuilderOl,
+    distanceWithin(value: FeatureThing, distance: number): BuilderOl
+    distanceBeyond(value: FeatureThing, distance: number): BuilderOl
 }
-export class OpenLayersIntersects extends OpenLayersBase {
-    static alias = 'intersects'
+
+export class OlIntersects extends OlBase {
+    static alias = 'intersects';
+}
+
+export class OlDisjoint extends OlBase {
+    static alias = 'disjoint';
+}
+
+export class OlContains extends OlBase {
+    static alias = 'contains';
+}
+
+export class OlWithin extends OlBase {
+    static alias = 'within';
+}
+
+export class OlDistanceWithin extends OlBase {
+    static alias = 'dwithin';
+}
+export class OlDistanceBeyond extends OlBase {
+    static alias = 'beyond';
 }

@@ -1,5 +1,5 @@
-import { Logical } from "./wa-logical";
 import { IBuilder } from "./wa-builder-core";
+import { Logical } from "./wa-logical";
 
 export interface IDictionary<T> {
     [key: string]: T;
@@ -14,7 +14,18 @@ export interface IJsonDump {
     ctorArgs?: any[]
     isLogical?: boolean
     isRuntime?: boolean
-    operators?: IJsonDump[]
+    operators?: IJsonDump[],
+    builderOpts?: IBuilderOpts
+}
+
+export interface IBuilderOpts { }
+
+export interface IComparisonOpts {
+    isDate?: boolean
+}
+export interface ILikeOptions extends IComparisonOpts {
+    matchCase: boolean
+    wildCard?: string
 }
 
 export interface IJson {
