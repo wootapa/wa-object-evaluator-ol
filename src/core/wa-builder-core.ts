@@ -28,23 +28,23 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     protected _this: T;
 
     // Provided by subclass so we can return the correct type
-    protected abstract getBuilder(): T;
+    protected abstract _getBuilder(): T;
 
     // Provided by subclass so we know how to create unknown operators
-    protected abstract getClassDict(): ClassDict;
+    protected abstract _getClassDict(): ClassDict;
 
     // Provides configuration for subclass when restoring from json
-    protected abstract setConfiguration(config: IBuilderOpts): void;
+    protected abstract _setConfiguration(config: IBuilderOpts): void;
 
     // Gets configuration from subclass when serializing to json
-    protected abstract getConfiguration(): IBuilderOpts;
+    protected abstract _getConfiguration(): IBuilderOpts;
 
     constructor() {
-        this._this = this.getBuilder();
+        this._this = this._getBuilder();
         // Use AND by default. Overridden in static constructors.
         this._logical = new LogicalAnd(this._this)
         // Merge base and implementation classmaps
-        clazzDict = { ...clazzDict, ...this._this.getClassDict() };
+        clazzDict = { ...clazzDict, ...this._this._getClassDict() };
     }
 
     /**
@@ -56,7 +56,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     static fromJson<T extends BuilderCoreBase<T>>(this: { new(): T }, json: IJsonDump | string) {
         const jsonParsed = (typeof (json) === 'string' ? JSON.parse(json) : json) as IJsonDump;
         const builder = new this();
-        builder.setConfiguration(jsonParsed.builderOpts);
+        builder._setConfiguration(jsonParsed.builderOpts);
         builder._logical = Logical.fromJson(jsonParsed, clazzDict, builder);
         return builder;
     }
@@ -122,7 +122,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @returns builder as JSON
      */
     asJson(): IJsonDump {
-        return { ...this._logical.asJson(), builderOpts: this.getConfiguration() };
+        return { ...this._logical.asJson(), builderOpts: this._getConfiguration() };
     }
 
     /**
@@ -571,17 +571,17 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
 
 export class BuilderCore extends BuilderCoreBase<BuilderCore> {
 
-    protected setConfiguration(config: IBuilderOpts): void { }
+    protected _setConfiguration(config: IBuilderOpts): void { }
 
-    protected getConfiguration(): IBuilderOpts {
+    protected _getConfiguration(): IBuilderOpts {
         return {};
     }
 
-    protected getClassDict(): IDictionary<Function> {
+    protected _getClassDict(): IDictionary<Function> {
         return {};
     }
 
-    protected getBuilder(): BuilderCore {
+    protected _getBuilder(): BuilderCore {
         return this;
     }
 }

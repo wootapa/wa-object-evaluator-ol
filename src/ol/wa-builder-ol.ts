@@ -15,21 +15,21 @@ class BuilderOlOpts implements IOlBuilderOpts {
 }
 
 export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperators {
-    _opts = new BuilderOlOpts();
+    private _opts = new BuilderOlOpts();
 
-    protected getConfiguration(): IOlBuilderOpts {
+    protected _getConfiguration(): IOlBuilderOpts {
         return this._opts;
     }
 
-    protected setConfiguration(config: IOlBuilderOpts): void {
+    protected _setConfiguration(config: IOlBuilderOpts): void {
         this._opts = config;
     }
 
-    protected getBuilder(): BuilderOl {
+    protected _getBuilder(): BuilderOl {
         return this;
     }
 
-    protected getClassDict(): ClassDict {
+    protected _getClassDict(): ClassDict {
         return {
             [OlIntersects.alias]: OlIntersects,
             [OlDisjoint.alias]: OlDisjoint,
