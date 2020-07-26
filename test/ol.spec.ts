@@ -18,8 +18,8 @@ const polyFeature = new Feature(poly);
 const pointCenter = new Point(getCenter(poly.getExtent()));
 const lineCrosses = new LineString([getTopLeft(polyExtent), getBottomRight(polyExtent)]);
 
-describe("ol", () => {
-    it("polys of different formats intersects", () => {
+describe('ol', () => {
+    it('polys of different formats intersects', () => {
         const result = and()
             .intersects(polyExtent)
             .intersects(poly)
@@ -31,7 +31,7 @@ describe("ol", () => {
         expect(result).true;
     });
 
-    it("nondefault geometryname", () => {
+    it('nondefault geometryname', () => {
         const polyFeatureCustomName = new Feature({ 'the_geom': poly });
         polyFeatureCustomName.setGeometryName('the_geom');
 
@@ -43,7 +43,7 @@ describe("ol", () => {
         expect(result).true;
     });
 
-    it("point of poly centroid intersects", () => {
+    it('point of poly centroid intersects', () => {
         const result = and()
             .intersects(pointCenter)
             .done()
@@ -52,7 +52,7 @@ describe("ol", () => {
         expect(result).true;
     });
 
-    it("line crossing poly intersects", () => {
+    it('line crossing poly intersects', () => {
         const result = and()
             .intersects(lineCrosses)
             .done()
@@ -61,7 +61,7 @@ describe("ol", () => {
         expect(result).true;
     });
 
-    it("builder and json-builder evaluates same", () => {
+    it('builder and json-builder evaluates same', () => {
         const builder1 = and()
             .intersects(lineCrosses)
             .disjoint(lineCrosses)
@@ -78,7 +78,7 @@ describe("ol", () => {
         expect(result1).eq(result2);
     });
 
-    it("point is within poly", () => {
+    it('point is within poly', () => {
         const builder = and()
             .within(poly)
             .done();
@@ -87,7 +87,7 @@ describe("ol", () => {
         expect(result).true;
     });
 
-    it("poly contains point", () => {
+    it('poly contains point', () => {
         const builder = and()
             .contains(pointCenter)
             .done();
@@ -96,7 +96,7 @@ describe("ol", () => {
         expect(result).true;
     });
 
-    it("distance approximation", () => {
+    it('distance approximation', () => {
 
         const p1 = [1559500, 7565753]; // Home
         const p2 = [1575395, 7564424]; // Work

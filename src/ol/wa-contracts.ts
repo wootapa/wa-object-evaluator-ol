@@ -4,7 +4,7 @@ import { IBuilderOpts, ThingOrThingGetter } from '../core/wa-contracts';
 
 export type FeatureThing = ThingOrThingGetter<Feature | Geometry | Object | string>;
 
-export interface IOlBuilderOpts extends IBuilderOpts { 
+export interface IOlBuilderOpts extends IBuilderOpts {
     projCode: string
 }
 

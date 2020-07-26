@@ -8,8 +8,9 @@
   "browser": "dist/waoe.ol.umd.js",
   "scripts": {
     "start": "npm run build",
+    "lint": "eslint --fix --ext .ts ./src && eslint --fix --ext .ts ./test",
     "test": "mocha -r performance-now -r esm -r jsdom-global/register -r ts-node/register test/*.spec.ts",
-    "build": "rollup -c"
+    "build": "npm run lint && rollup -c"
   },
   "files": [
     "dist/**/*.{js,map,ts}"
@@ -42,12 +43,16 @@
   },
   "homepage": "https://github.com/wootapa/wa-object-evaluator/tree/ol#readme",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-commonjs": "^14.0.0",
     "@rollup/plugin-node-resolve": "^8.0.0",
-    "@types/chai": "^4.2.9",
-    "@types/mocha": "^7.0.2",
+    "@types/chai": "^4.2.11",
+    "@types/mocha": "^8.0.0",
     "@types/ol": "^6.1.0",
+    "@typescript-eslint/eslint-plugin": "^3.3.0",
+    "@typescript-eslint/parser": "^3.3.0",
     "chai": "^4.2.0",
+    "eslint": "^7.2.0",
+    "eslint-config-typescript": "^3.0.0",
     "esm": "^3.2.25",
     "jsdom": "^16.2.2",
     "jsdom-global": "^3.0.2",

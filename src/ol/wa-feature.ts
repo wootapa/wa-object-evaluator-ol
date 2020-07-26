@@ -1,32 +1,34 @@
 import booleanContains from '@turf/boolean-contains';
 import booleanIntersects from '@turf/boolean-intersects';
-import { Feature } from "ol";
+import { Feature } from 'ol';
+import { Coordinate } from 'ol/coordinate';
 import { Extent, getCenter } from 'ol/extent';
 import GeoJSON from 'ol/format/GeoJSON';
 import WKT from 'ol/format/WKT';
-import Geometry from "ol/geom/Geometry";
+import Geometry from 'ol/geom/Geometry';
 import LineString from 'ol/geom/LineString';
-import Point from "ol/geom/Point";
-import Polygon, { fromExtent } from "ol/geom/Polygon";
+import Point from 'ol/geom/Point';
+import Polygon, { fromExtent } from 'ol/geom/Polygon';
 import { getDistance } from 'ol/sphere';
-import { FeatureThing } from "./wa-contracts";
+import { IDictionary } from '../core/wa-contracts';
+import { FeatureThing } from './wa-contracts';
 
 const formatWkt = new WKT();
 const formatJson = new GeoJSON();
 
 export class WAFeature {
     constructor(private _feature: Feature) { }
-    
+
     static readonly GEOMETRYNAME_DEFAULT = 'geometry';
     static readonly GEOMETRYNAME_HINT = 'waoe_geometryname';
     static readonly WGS84_RADIUS = 6371008.8;
-    
+
     static factory = (obj: FeatureThing): WAFeature => {
-        if (obj instanceof Function) {
-            return WAFeature.factory(obj.call(obj, WAFeature.GEOMETRYNAME_DEFAULT));
-        }
         if (obj instanceof WAFeature) {
             return obj;
+        }
+        if (obj instanceof Function) {
+            return WAFeature.factory(obj.call(obj, WAFeature.GEOMETRYNAME_DEFAULT));
         }
         if (obj instanceof Feature) {
             return new WAFeature(obj).assertSimple();
@@ -55,30 +57,30 @@ export class WAFeature {
                 : formatWkt.readFeature(obj)
             ).assertSimple();
         }
-        throw new Error("Unsupported geometry type");
+        throw new Error('Unsupported geometry type');
     }
 
-    assertSimple = () => {
+    assertSimple(): WAFeature {
         if (this.isMulti()) {
-            throw new Error("Multi-geometries not supported");
+            throw new Error('Multi-geometries not supported');
         }
         return this;
     }
 
-    getGeometry() {
-        return this._feature.getGeometry();;
+    getGeometry(): Geometry {
+        return this._feature.getGeometry();
     }
 
-    getGeometryLonLat(sourceProjection: string) {
+    getGeometryLonLat(sourceProjection: string): Geometry {
         const geom = this.isPoint() ? fromExtent(this.getExtent()) : this.getGeometry().clone();
         return geom.transform(sourceProjection, 'EPSG:4326');
     }
 
-    getGeometryName() {
+    getGeometryName(): string {
         return this._feature.getGeometryName();
     }
 
-    setGeometryName(geometryName: string) { 
+    setGeometryName(geometryName: string): void {
         if (geometryName !== this.getGeometryName()) {
             const olFeature = this.getOlFeature();
             olFeature.set(geometryName, olFeature.getGeometry());
@@ -87,35 +89,35 @@ export class WAFeature {
         }
     }
 
-    getExtent() {
+    getExtent(): Extent {
         return this.getGeometry().getExtent();
     }
 
-    getProperties() {
+    getProperties(): IDictionary<any> {
         return this._feature.getProperties();
     }
 
-    getCenter() {
+    getCenter(): Coordinate {
         return getCenter(this.getExtent());
     }
 
-    getOlFeature() {
+    getOlFeature(): Feature {
         return this._feature;
     }
 
-    isMulti() {
+    isMulti(): boolean {
         return this.getGeometry().getType().includes('Multi');
     }
 
-    isPolygon() {
+    isPolygon(): boolean {
         return this.getGeometry().getType() === 'Polygon';
     }
 
-    isLineString() {
+    isLineString(): boolean {
         return this.getGeometry().getType() === 'LineString';
     }
 
-    isPoint() {
+    isPoint(): boolean {
         return this.getGeometry().getType() === 'Point';
     }
 
@@ -134,19 +136,19 @@ export class WAFeature {
         return poly.getArea() === polyExtent.getArea();
     }
 
-    asWkt() {
+    asWkt(): string {
         return formatWkt.writeGeometry(this.getGeometry());
     }
 
-    asGeoJson() {
+    asGeoJson(): string {
         return formatJson.writeGeometry(this.getGeometry());
     }
 
-    asTurf(projCode: string) {
+    asTurf(projCode: string): any {
         return formatJson.writeGeometryObject(this.getGeometryLonLat(projCode)) as any;
     }
 
-    toGml() {
+    toGml(): string {
         if (this.isPoint()) {
             return `<gml:Point><gml:pos>${(this.getGeometry() as Point).getFlatCoordinates().join(' ')}</gml:pos></gml:Point>`;
         }

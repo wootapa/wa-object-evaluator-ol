@@ -1,11 +1,11 @@
-import { ProjectionLike } from "ol/proj";
-import Projection from "ol/proj/Projection";
-import { BuilderCoreBase } from "../core/wa-builder-core";
-import { ClassDict } from "../core/wa-contracts";
-import { FeatureThing, IDistanceOpts, IOlBuilderOpts } from "./wa-contracts";
-import { WAFeature } from "./wa-feature";
-import { WAFilter } from "./wa-filter";
-import { IOlOperators, OlContains, OlDisjoint, OlDistanceBeyond, OlDistanceWithin, OlIntersects, OlWithin } from "./wa-ol";
+import { ProjectionLike } from 'ol/proj';
+import Projection from 'ol/proj/Projection';
+import { BuilderCoreBase } from '../core/wa-builder-core';
+import { ClassDict } from '../core/wa-contracts';
+import { FeatureThing, IDistanceOpts, IOlBuilderOpts } from './wa-contracts';
+import { WAFeature } from './wa-feature';
+import { WAFilter } from './wa-filter';
+import { IOlOperators, OlContains, OlDisjoint, OlDistanceBeyond, OlDistanceWithin, OlIntersects, OlWithin } from './wa-ol';
 
 let DEFAULT_PROJECTION = 'EPSG:3857';
 
@@ -43,37 +43,37 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
     /**
      * Sets default projection for all builders.
      * Default `EPSG:3857` (Web Mercator)
-     * 
+     *
      * @remarks Projection must be known.
-     * 
+     *
      * @param projection - Projection instance or code
      */
-    static defaultProjection(projection: ProjectionLike) {
+    static defaultProjection(projection: ProjectionLike): void {
         DEFAULT_PROJECTION = projection instanceof Projection ? projection.getCode() : projection;
     }
 
     /**
      * Sets projection for all child spatial operators.
-     * 
+     *
      * @remarks Projection must be known.
-     * 
+     *
      * @param projection - Projection instance or code
-     * 
+     *
      * @returns Builder
      */
-    projection(projection: ProjectionLike) {
+    projection(projection: ProjectionLike): BuilderOl {
         this._opts.projCode = projection instanceof Projection ? projection.getCode() : projection;
         return this;
     }
 
     /**
      * Evaluates featurething.
-     * 
+     *
      * @param obj - The featurething to evaluate
-     * 
+     *
      * @returns True if object passed all child operators
      */
-    evaluate(obj: FeatureThing) {
+    evaluate(obj: FeatureThing): boolean {
         // To support all base operators, we need a dict or they can't resolve values
         const feature = WAFeature.factory(obj);
         const properties = feature.getProperties();
@@ -86,9 +86,9 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
     /**
      * Returns true when object intersects value.
      * Inverse of `disjoint`.
-     * 
+     *
      * @param value - The featurething to compare
-     * 
+     *
      * @returns Builder
      */
     intersects(value: FeatureThing): BuilderOl {
@@ -99,9 +99,9 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
     /**
      * Returns true when object do not intersects value.
      * Inverse of `intersects`.
-     *  
+     *
      * @param value - The featurething to compare
-     * 
+     *
      * @returns Builder
      */
     disjoint(value: FeatureThing): BuilderOl {
@@ -112,9 +112,9 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
     /**
      * Returns true when object completely contains value.
      * Inverse of `within`.
-     * 
+     *
      * @param value - The featurething to compare
-     * 
+     *
      * @returns Builder
      */
     contains(value: FeatureThing): BuilderOl {
@@ -125,9 +125,9 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
     /**
      * Returns true when object is completely within value.
      * Inverse of `contains`.
-     * 
+     *
      * @param value - The featurething to compare
-     * 
+     *
      * @returns Builder
      */
     within(value: FeatureThing): BuilderOl {
@@ -138,12 +138,12 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
     /**
      * Returns true when object is no more than specified distance from value.
      * Inverse of `distanceBeyond`.
-     * 
+     *
      * @remarks Requires a correct projection.
-     * 
+     *
      * @param value - The featurething to compare
      * @param distance - Distance in meters
-     * 
+     *
      * @returns Builder
      */
     distanceWithin(value: FeatureThing, distance: number): BuilderOl {
@@ -154,12 +154,12 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
     /**
      * Returns true when object is more than specified distance from value.
      * Inverse of `distanceWithin`.
-     * 
+     *
      * @remarks Requires a correct projection.
-     * 
+     *
      * @param value - The featurething to compare
      * @param distance - Distance in meters
-     * 
+     *
      * @returns Builder
      */
     distanceBeyond(value: FeatureThing, distance: number): BuilderOl {
@@ -169,22 +169,22 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
 
     /**
      * Returns operators as an OGC CQL query.
-     * 
+     *
      * @returns OGC CQL query
      */
-    asOgcCql() {
+    asOgcCql(): string {
         return WAFilter.asOgcCql(this._logical);
     }
 
     /**
      * Returns operators as an OGC XML query.
-     * 
+     *
      * @remarks
      * Wrap in encodeURI to avoid encoding issues
-     * 
+     *
      * @returns OGC XML query
      */
-    asOgcXml() {
+    asOgcXml(): string {
         return WAFilter.asOgcXml(this._logical);
     }
 }

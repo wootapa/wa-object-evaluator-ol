@@ -1,15 +1,15 @@
-import { IComparisonOpts, IEvaluatable, IJson, IJsonDump, ILikeOptions, Primitive, PrimitiveThing } from "./wa-contracts";
-import { Reporter, Util } from "./wa-util";
+import { IComparisonOpts, IEvaluatable, IJson, IJsonDump, ILikeOptions, IReport, Primitive, PrimitiveThing } from './wa-contracts';
+import { Reporter, Util } from './wa-util';
 
 export abstract class KeyValue {
     protected _key: string;
     protected _value: Primitive;
 
-    get key() {
+    get key(): string {
         return this._key;
     }
 
-    get value() {
+    get value(): Primitive {
         return this._value;
     }
 
@@ -17,7 +17,7 @@ export abstract class KeyValue {
         this._key = key;
         this._value = Util.resolveOperatorValue(value);
     }
-};
+}
 
 export abstract class Comparison extends KeyValue implements IEvaluatable, IJson {
     static alias: string;
@@ -37,19 +37,19 @@ export abstract class Comparison extends KeyValue implements IEvaluatable, IJson
         this._reporter = new Reporter(`${this.getAlias()}:${this.key}`);
     }
 
-    get opts() {
+    get opts(): IComparisonOpts {
         return this._opts;
     }
 
-    getAlias() {
+    getAlias(): string {
         return (this.constructor as any).alias;
     }
 
-    getReport() {
+    getReport(): IReport {
         return this._reporter.getReport();
     }
 
-    resetReport() {
+    resetReport(): void {
         this._reporter.reset();
     }
 
@@ -62,7 +62,7 @@ export abstract class Comparison extends KeyValue implements IEvaluatable, IJson
 
     evaluate<PrimitiveThing>(obj: PrimitiveThing): boolean {
         // Get object and compare values
-        let evalValue = Util.resolveObjectValue<Primitive, PrimitiveThing>(this._key, obj);
+        const evalValue = Util.resolveObjectValue<Primitive, PrimitiveThing>(this._key, obj);
         this._reporter.start();
 
         let result = false;
@@ -88,17 +88,15 @@ export abstract class Comparison extends KeyValue implements IEvaluatable, IJson
             const opts = this._opts as ILikeOptions;
 
             if (evalValue && this._value) {
-                let o = evalValue.toString() as string;
-
                 if (!this['valueRe']) {
-                    let v = `*${this._value.toString()}*`
-                        .replace(/[\-\[\]\/\{\}\(\)\+\.\\\^\$\|]/g, "\\$&")
-                        .replace(new RegExp(`\\${opts.wildCard}`, 'g'), ".*")
-                        .replace(/\?/g, ".");
+                    const v = `*${this._value.toString()}*`
+                        .replace(/[-[\]/{}()+.\\^$|]/g, '\\$&')
+                        .replace(new RegExp(`\\${opts.wildCard}`, 'g'), '.*')
+                        .replace(/\?/g, '.');
                     const flags = !opts.matchCase ? 'i' : '';
                     this['valueRe'] = new RegExp(v, flags);
                 }
-                result = this['valueRe'].test(o);
+                result = this['valueRe'].test(evalValue);
             }
         }
         this._reporter.stop(result);
@@ -108,52 +106,52 @@ export abstract class Comparison extends KeyValue implements IEvaluatable, IJson
 
 // Exports to be implemented in builder
 export interface IComparison<T> {
-    equals(key: string, value: PrimitiveThing): T
-    isNull(key: string): T
-    eq(key: string, value: PrimitiveThing): T
-    greaterThan(key: string, value: PrimitiveThing): T
-    gt(key: string, value: PrimitiveThing): T
-    greaterThanEquals(key: string, value: PrimitiveThing): T
-    gte(key: string, value: PrimitiveThing): T
-    lessThan(key: string, value: PrimitiveThing): T
-    lt(key: string, value: PrimitiveThing): T
-    lessThanEquals(key: string, value: PrimitiveThing): T
-    lte(key: string, value: PrimitiveThing): T
-    like(key: string, value: PrimitiveThing, options?: IComparisonOpts): T
-    ilike(key: string, value: PrimitiveThing, options?: IComparisonOpts): T
-    any(key: string, values: PrimitiveThing[]): T
+    equals(key: string, value: PrimitiveThing): T;
+    isNull(key: string): T;
+    eq(key: string, value: PrimitiveThing): T;
+    greaterThan(key: string, value: PrimitiveThing): T;
+    gt(key: string, value: PrimitiveThing): T;
+    greaterThanEquals(key: string, value: PrimitiveThing): T;
+    gte(key: string, value: PrimitiveThing): T;
+    lessThan(key: string, value: PrimitiveThing): T;
+    lt(key: string, value: PrimitiveThing): T;
+    lessThanEquals(key: string, value: PrimitiveThing): T;
+    lte(key: string, value: PrimitiveThing): T;
+    like(key: string, value: PrimitiveThing, options?: IComparisonOpts): T;
+    ilike(key: string, value: PrimitiveThing, options?: IComparisonOpts): T;
+    any(key: string, values: PrimitiveThing[]): T;
 }
 
 export class ComparisonEquals extends Comparison {
-    static alias = 'eq'
+    static alias = 'eq';
 }
 
 export class ComparisonIsNull extends Comparison {
-    static alias = 'isnull'
+    static alias = 'isnull';
 }
 
 export class ComparisonGreaterThan extends Comparison {
-    static alias = 'gt'
+    static alias = 'gt';
 }
 
 export class ComparisonGreaterThanEquals extends Comparison {
-    static alias = 'gte'
+    static alias = 'gte';
 }
 
 export class ComparisonLessThan extends Comparison {
-    static alias = 'lt'
+    static alias = 'lt';
 }
 
 export class ComparisonLessThanEquals extends Comparison {
-    static alias = 'lte'
+    static alias = 'lte';
 }
 
 export class ComparisonLike extends Comparison {
-    static alias = 'like'
+    static alias = 'like';
     constructor(key: string, value: PrimitiveThing, opts?: ILikeOptions) {
         super(key, value, { matchCase: true, wildCard: '*', ...opts });
-    };
-    get opts() {
+    }
+    get opts(): ILikeOptions {
         return this._opts as ILikeOptions;
-    };
+    }
 }

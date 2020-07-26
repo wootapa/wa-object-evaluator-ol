@@ -1,10 +1,10 @@
 
-import { KeyValue } from "../core/wa-comparison";
-import { IEvaluatable, IJson, IJsonDump } from "../core/wa-contracts";
-import { Reporter } from "../core/wa-util";
-import { BuilderOl } from "./wa-builder-ol";
-import { FeatureThing, IDistanceOpts, IOlOpts } from "./wa-contracts";
-import { WAFeature } from "./wa-feature";
+import { KeyValue } from '../core/wa-comparison';
+import { IEvaluatable, IJson, IJsonDump, IReport } from '../core/wa-contracts';
+import { Reporter } from '../core/wa-util';
+import { BuilderOl } from './wa-builder-ol';
+import { FeatureThing, IDistanceOpts, IOlOpts } from './wa-contracts';
+import { WAFeature } from './wa-feature';
 
 // Base class for all operators
 export abstract class OlBase extends KeyValue implements IEvaluatable, IJson {
@@ -27,11 +27,11 @@ export abstract class OlBase extends KeyValue implements IEvaluatable, IJson {
         this._reporter = new Reporter(`${this.getAlias()}:${this.key}`);
     }
 
-    get feature() {
+    get feature(): WAFeature {
         return this._feature;
     }
 
-    get opts() {
+    get opts(): IOlOpts {
         return this._opts;
     }
 
@@ -39,11 +39,11 @@ export abstract class OlBase extends KeyValue implements IEvaluatable, IJson {
         return (this.constructor as any).alias;
     }
 
-    getReport() {
+    getReport(): IReport {
         return this._reporter.getReport();
     }
 
-    resetReport() {
+    resetReport(): void {
         this._reporter.reset();
     }
 

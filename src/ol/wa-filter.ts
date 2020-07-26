@@ -6,7 +6,9 @@ import { OlBase, OlContains, OlDisjoint, OlDistanceBeyond, OlDistanceWithin, OlI
 
 export class WAFilter {
 
-    private constructor() { }
+    private constructor() {
+        /* Empty */
+     }
 
     static asOgcCql = (logical: Logical): string => {
         const walk = (operator: Operator): string => {
@@ -62,7 +64,7 @@ export class WAFilter {
                     return `${operator.key} ${operator.opts.matchCase ? 'LIKE' : 'ILIKE'} '${reValue}'`;
                 }
             }
-            // Logical            
+            // Logical
             if (operator instanceof LogicalAnd) {
                 return `(${operator.getOperators().map(walk).join(' AND ')})`
             }
@@ -132,7 +134,7 @@ export class WAFilter {
                     return `<ogc:PropertyIsLike matchCase="${operator.opts.matchCase}" wildCard="${operator.opts.wildCard}" escapeChar="\\" singleChar=".">${property}${value}</ogc:PropertyIsLike>`;
                 }
             }
-            // Logical            
+            // Logical
             if (operator instanceof LogicalAnd) {
                 return `<ogc:And>${operator.getOperators().map(walk).join('')}</ogc:And>`;
             }
