@@ -26,7 +26,7 @@ On top of the [existing](https://github.com/wootapa/wa-object-evaluator/blob/mas
 * `defaultProjection(projection)` - Sets default projection for all new builders. The projection is assumed to be known by OpenLayers and values are assumed to be transformed. Defaults to [EPSG:3857](http://epsg.io/3857).
 
 ### Spatial operators
-Operator values can be an ol Feature/Geometry, WKT, GeoJSON or an array(2=point, 4=extent=polygon). 
+Operator values can be an ol Feature/Geometry, WKT, GeoJSON or an array(2=point, 4=extent=polygon, 6=linestring, 8+=linestring/polygon). 
 
 * `intersects(value)` - True when object intersects value. 
 * `disjoint(value)` - True when object do not intersects value (inverse of intersects).
@@ -44,7 +44,7 @@ OGC CQL/XML outputs the geometryname as `geometry`. To control it, use an ol/Fea
 
 
 ## Evaluating objects
-Just as operator values, it's not strictly required to pass an ol/Feature as the evaluation object; but you'll need it if you also want to compare attributes with the standard operators. That said, object can be an ol Feature/Geometry, WKT, GeoJSON or an array(2=point, 4=extent=polygon).
+Just as operator values, it's not strictly required to pass an ol/Feature as the evaluation object; but you'll need it if you also want to compare attributes with the standard operators. That said, object can be an ol Feature/Geometry, WKT, GeoJSON or an array(2=point, 4=extent=polygon, 6=linestring, 8+=linestring/polygon).
 
 ## An example
 So maybe you have a bunch of features and Johnny asked you for all wells.
@@ -86,11 +86,12 @@ const xml = oe.asOgcXml();
 ## Pro ol-tip!
 To hide/show features based on the result you can do:
 ```javascript
+const hiddenStyle = new Style();
 source.forEachFeature(feature => {
     feature.setStyle(
         oe.evaluate(feature)
-            ? null // visible (use layer style)
-            : new Style() // hidden (overrides layer style)
+            ? null        // visible (use layer style)
+            : hiddenStyle // hidden (overrides layer style)
         );
 });
 ```

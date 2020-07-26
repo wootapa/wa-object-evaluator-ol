@@ -1,6 +1,6 @@
 {
   "name": "@wootapa/object-evaluator-ol",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Extension of @wootapa/object-evaluator with spatial operators for openlayers and ogc query output.",
   "main": "dist/waoe.ol.umd.js",
   "types": "dist/waoe.ol.d.ts",

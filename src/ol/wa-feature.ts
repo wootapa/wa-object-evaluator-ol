@@ -6,6 +6,7 @@ import { Extent, getCenter } from 'ol/extent';
 import GeoJSON from 'ol/format/GeoJSON';
 import WKT from 'ol/format/WKT';
 import Geometry from 'ol/geom/Geometry';
+import GeometryLayout from 'ol/geom/GeometryLayout';
 import LineString from 'ol/geom/LineString';
 import Point from 'ol/geom/Point';
 import Polygon, { fromExtent } from 'ol/geom/Polygon';
@@ -27,31 +28,46 @@ export class WAFeature {
         if (obj instanceof WAFeature) {
             return obj;
         }
-        if (obj instanceof Function) {
+        else if (obj instanceof Function) {
             return WAFeature.factory(obj.call(obj, WAFeature.GEOMETRYNAME_DEFAULT));
         }
-        if (obj instanceof Feature) {
+        else if (obj instanceof Feature) {
             return new WAFeature(obj).assertSimple();
         }
-        if (obj instanceof Geometry) {
+        else if (obj instanceof Geometry) {
             return new WAFeature(new Feature(obj)).assertSimple();
         }
-        if (obj instanceof Array) {
-            if (obj.length == 2) {
-                return new WAFeature(new Feature(new Point(obj)));
-            }
-            if (obj.length == 4) {
-                return new WAFeature(new Feature(fromExtent(obj as Extent)));
+        else if (obj instanceof Array) {
+            if (obj.length > 0 && obj.length % 2 === 0) {
+                // Point?
+                if (obj.length == 2) {
+                    return new WAFeature(new Feature(new Point(obj, GeometryLayout.XY)));
+                }
+                // Extent->Polygon?
+                if (obj.length == 4) {
+                    return new WAFeature(new Feature(fromExtent(obj as Extent)));
+                }
+                // LineString?
+                if (obj.length == 6) {
+                    return new WAFeature(new Feature(new LineString(obj, GeometryLayout.XY)));
+                }
+                // Polygon or LineString?
+                const [headX, headY] = obj.slice(0, 2);
+                const [tailX, tailY] = obj.slice(-2);
+                if (headX === tailX && headY === tailY) {
+                    return new WAFeature(new Feature(new Polygon(obj, GeometryLayout.XY, [obj.length])));
+                }
+                return new WAFeature(new Feature(new LineString(obj, GeometryLayout.XY)));
             }
         }
-        if (obj instanceof Object) {
+        else if (obj instanceof Object) {
             if (WAFeature.GEOMETRYNAME_HINT in obj) {
                 const geometryKey = obj[WAFeature.GEOMETRYNAME_HINT];
                 return WAFeature.factory(obj[geometryKey]);
             }
             return new WAFeature(formatJson.readFeature(obj)).assertSimple();
         }
-        if (typeof (obj) === 'string') {
+        else if (typeof (obj) === 'string') {
             return new WAFeature(obj.trimLeft().charAt(0) === '{'
                 ? formatJson.readFeature(obj)
                 : formatWkt.readFeature(obj)
