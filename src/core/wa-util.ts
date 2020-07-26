@@ -1,7 +1,8 @@
 import now from 'performance-now';
-import { IDictionary, IReport, ThingOrThingGetter } from "./wa-contracts";
+import { IDictionary, IReport, ThingOrThingGetter } from './wa-contracts';
 
 export class Util {
+
     static getDictValue = <T>(obj: IDictionary<T>, key: string): T => {
         // Check for composite key { 'a.b.c': 'foo'}
         if (key in obj) {
@@ -39,25 +40,25 @@ export class Util {
 }
 
 export class Reporter {
-    private _start: number = 0;
-    private _duration: number = 0;
+    private _start = 0;
+    private _duration = 0;
     private _truths = 0;
     private _falses = 0;
 
     constructor(private _id: string) { }
 
-    start() {
+    start(): Reporter {
         this._start = now();
         return this;
     }
 
-    stop(result: boolean) {
+    stop(result: boolean): IReport {
         this._duration += now() - this._start;
         result ? this._truths++ : this._falses++;
         return this.getReport();
     }
 
-    reset() {
+    reset(): Reporter {
         this._truths = 0;
         this._falses = 0;
         this._duration = 0;
@@ -69,7 +70,7 @@ export class Reporter {
             id: this._id,
             duration: this._duration,
             truths: this._truths,
-            falses: this._falses
+            falses: this._falses,
         };
     }
 }

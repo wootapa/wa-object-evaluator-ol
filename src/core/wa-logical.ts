@@ -1,6 +1,6 @@
-import { ClassDict, IEvaluatable, IJson, IJsonDump, Operator, Parent, ThingOrThingGetter } from "./wa-contracts";
-import { RuntimeOperator } from "./wa-runtime";
-import { Reporter } from "./wa-util";
+import { ClassDict, IEvaluatable, IJson, IJsonDump, Operator, Parent, ThingOrThingGetter, IReport } from './wa-contracts';
+import { RuntimeOperator } from './wa-runtime';
+import { Reporter } from './wa-util';
 
 export abstract class Logical implements IEvaluatable, IJson {
     private _operators: Operator[] = [];
@@ -11,9 +11,24 @@ export abstract class Logical implements IEvaluatable, IJson {
         this._reporter = new Reporter(`${this.getAlias()}`);
     }
 
-    getParent() {
+    static fromJson(json: IJsonDump, classDict: ClassDict, parent: Parent): Logical {
+        const logical = new classDict[json.type](parent) as Logical;
+        json.operators.forEach(jsonOperator => {
+            if (jsonOperator.isLogical) {
+                return logical.add(Logical.fromJson(jsonOperator, classDict, logical));
+            }
+            if (jsonOperator.isRuntime) {
+                return logical.add(RuntimeOperator.fromJson(jsonOperator, classDict));
+            }
+            const clazz = classDict[jsonOperator.type];
+            logical.add(new clazz(...jsonOperator.ctorArgs));
+        });
+        return logical;
+    }
+
+    getParent(): Parent {
         return this._parent;
-    };
+    }
 
     getOperators(): Operator[] {
         return this._operators;
@@ -35,39 +50,24 @@ export abstract class Logical implements IEvaluatable, IJson {
         return operators;
     }
 
-    add(operator: Operator) {
+    add(operator: Operator): Operator {
         this._operators.push(operator);
         return operator;
     }
 
-    clear() {
+    clear(): void {
         this._operators = [];
     }
 
-    static fromJson(json: IJsonDump, classDict: ClassDict, parent: Parent): Logical {
-        const logical = new classDict[json.type](parent) as Logical;
-        json.operators.forEach(jsonOperator => {
-            if (jsonOperator.isLogical) {
-                return logical.add(Logical.fromJson(jsonOperator, classDict, logical));
-            }
-            if (jsonOperator.isRuntime) {
-                return logical.add(RuntimeOperator.fromJson(jsonOperator, classDict));
-            }
-            const clazz = classDict[jsonOperator.type];
-            logical.add(new clazz(...jsonOperator.ctorArgs));
-        });
-        return logical;
-    }
-
-    getAlias() {
+    getAlias(): string {
         return (this.constructor as any).alias;
     }
 
-    getReport() {
+    getReport(): IReport {
         return this._reporter.getReport();
     }
 
-    resetReport() {
+    resetReport(): void {
         this._reporter.reset();
     }
 
@@ -85,13 +85,13 @@ export abstract class Logical implements IEvaluatable, IJson {
 
         if (this._operators.length > 0) {
             if (this instanceof LogicalAnd) {
-                result = this._operators.every(op => op.evaluate(obj));
+                result = this._operators.every((op) => op.evaluate(obj));
             }
-            if (this instanceof LogicalOr) {
-                result = this._operators.some(op => op.evaluate(obj));
+            else if (this instanceof LogicalOr) {
+                result = this._operators.some((op) => op.evaluate(obj));
             }
-            if (this instanceof LogicalNot) {
-                result = this._operators.every(op => !op.evaluate(obj));
+            else if (this instanceof LogicalNot) {
+                result = this._operators.every((op) => !op.evaluate(obj));
             }
         }
 
@@ -101,11 +101,11 @@ export abstract class Logical implements IEvaluatable, IJson {
 }
 
 export class LogicalAnd extends Logical {
-    static alias = "and";
+    static alias = 'and';
 }
 export class LogicalOr extends Logical {
-    static alias = "or";
+    static alias = 'or';
 }
 export class LogicalNot extends Logical {
-    static alias = "not";
+    static alias = 'not';
 }

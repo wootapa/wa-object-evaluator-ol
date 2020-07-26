@@ -1,5 +1,5 @@
-import { IBuilder } from "./wa-builder-core";
-import { Logical } from "./wa-logical";
+import { IBuilder } from './wa-builder-core';
+import { Logical } from './wa-logical';
 
 export interface IDictionary<T> {
     [key: string]: T;
@@ -10,50 +10,50 @@ export interface IThingGetter<T> {
 }
 
 export interface IJsonDump {
-    type: string
-    ctorArgs?: any[]
-    isLogical?: boolean
-    isRuntime?: boolean
-    operators?: IJsonDump[],
-    builderOpts?: IBuilderOpts
+    type: string;
+    ctorArgs?: any[];
+    isLogical?: boolean;
+    isRuntime?: boolean;
+    operators?: IJsonDump[];
+    builderOpts?: IBuilderOpts;
 }
 
 export interface IBuilderOpts { }
 
 export interface IComparisonOpts {
-    isDate?: boolean
+    isDate?: boolean;
 }
 export interface ILikeOptions extends IComparisonOpts {
-    matchCase: boolean
-    wildCard?: string
+    matchCase: boolean;
+    wildCard?: string;
 }
 
 export interface IJson {
-    asJson(): IJsonDump
+    asJson(): IJsonDump;
 }
 
 export interface IReport {
-    id: string,
-    duration: number
-    truths: number
-    falses: number
+    id: string;
+    duration: number;
+    truths: number;
+    falses: number;
 }
 export interface IReportSummary {
-    duration: number
-    truths: number
-    falses: number
-    details: IReport[]
+    duration: number;
+    truths: number;
+    falses: number;
+    details: IReport[];
 }
 
 export interface IRuntimeOperatorCallback {
-    (value: PrimitiveThing): boolean
+    (value: PrimitiveThing): boolean;
 }
 
 export interface IEvaluatable {
-    getAlias(): string,
-    evaluate<T>(obj: ThingOrThingGetter<T>): boolean
-    getReport(): IReport,
-    resetReport(): void
+    getAlias(): string;
+    evaluate<T>(obj: ThingOrThingGetter<T>): boolean;
+    getReport(): IReport;
+    resetReport(): void;
 }
 
 export type ThingOrThingGetter<T> = T | IThingGetter<T> | IDictionary<T> | object;

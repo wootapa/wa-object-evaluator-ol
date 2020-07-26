@@ -10,17 +10,17 @@ const person = {
     }
 };
 
-describe("and", () => {
-    it("should equal fname and lname", () => {
+describe('and', () => {
+    it('should equal fname and lname', () => {
         const result = and()
             .eq('fname', person.fname)
             .eq('lname', person.lname)
             .done()
-            .evaluate(person)
+            .evaluate(person);
 
         expect(result).true;
     });
-    it("should equal fname but not lname", () => {
+    it('should equal fname but not lname', () => {
         const result = and()
             .eq('fname', person.fname)
             .eq('lname', 'Miyagi')
@@ -31,8 +31,8 @@ describe("and", () => {
     });
 });
 
-describe("or", () => {
-    it("should equal fname or lname", () => {
+describe('or', () => {
+    it('should equal fname or lname', () => {
         const result = and()
             .or()
             .eq('fname', person.fname)
@@ -42,7 +42,7 @@ describe("or", () => {
 
         expect(result).true;
     });
-    it("should equal fname but not lname but will short-circuit", () => {
+    it('should equal fname but not lname but will short-circuit', () => {
         const result = and()
             .or()
             .eq('fname', person.fname)
@@ -52,7 +52,7 @@ describe("or", () => {
 
         expect(result).true;
     });
-    it("should not equal fname nor lname and street, but street and town", () => {
+    it('should not equal fname nor lname and street, but street and town', () => {
         const result = or()
             .gte('fname', 'Bonkers')
             .and()
@@ -67,7 +67,7 @@ describe("or", () => {
 
         expect(result).true;
     });
-    it("should equal fname, not lname and street, but street and town", () => {
+    it('should equal fname, not lname and street, but street and town', () => {
         const result = and()
             .gte('fname', person.fname)
             .or()
@@ -87,8 +87,8 @@ describe("or", () => {
     });
 });
 
-describe("not", () => {
-    it("should not equal fname", () => {
+describe('not', () => {
+    it('should not equal fname', () => {
         const result = and()
             .not()
             .eq('fname', 'Doogie')
@@ -99,17 +99,19 @@ describe("not", () => {
     });
 });
 
-describe("combinations", () => {
-    it("should equal fname and any street but not town", () => {
+describe('combinations', () => {
+    it('should equal fname and any street but not town', () => {
         const result = and()
             .eq('fname', person.fname)
-            //.any('address.street', [123,151,456])
+        //.any('address.street', [123,151,456])
             .or()
             .eq('address.street', 123)
             .eq('address.street', person.address.street)
-            .eq('address.street', 456).up()
+            .eq('address.street', 456)
+            .up()
             .not()
-            .eq('address.town', 'Vinslöv').up()
+            .eq('address.town', 'Vinslöv')
+            .up()
             .done()
             .evaluate(person);
 

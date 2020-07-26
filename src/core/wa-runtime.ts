@@ -1,6 +1,6 @@
-import { KeyValue } from "./wa-comparison";
-import { ClassDict, IEvaluatable, IJson, IJsonDump, IRuntimeOperatorCallback, Primitive } from "./wa-contracts";
-import { Reporter, Util } from "./wa-util";
+import { KeyValue } from './wa-comparison';
+import { ClassDict, IEvaluatable, IJson, IJsonDump, IRuntimeOperatorCallback, Primitive, IReport } from './wa-contracts';
+import { Reporter, Util } from './wa-util';
 
 export class RuntimeOperatorDef {
     private _alias: string;
@@ -9,13 +9,13 @@ export class RuntimeOperatorDef {
     constructor(alias: string, func: IRuntimeOperatorCallback) {
         this._alias = alias;
         this._func = func;
-    };
+    }
 
-    get alias() {
+    get alias(): string {
         return this._alias;
     }
 
-    get func() {
+    get func(): IRuntimeOperatorCallback {
         return this._func;
     }
 }
@@ -25,7 +25,7 @@ export class RuntimeOperator extends KeyValue implements IEvaluatable, IJson {
     private _reporter: Reporter;
 
     constructor(key: string, def: RuntimeOperatorDef) {
-        super(key, '(custom operator)')
+        super(key, '(custom operator)');
         this._def = def;
         this._reporter = new Reporter(`${this.getAlias()}:${this.key}`);
     }
@@ -41,15 +41,15 @@ export class RuntimeOperator extends KeyValue implements IEvaluatable, IJson {
         return new RuntimeOperator(key, classDict[json.type]);
     }
 
-    getAlias() {
+    getAlias(): string {
         return this._def.alias;
     }
 
-    getReport() {
+    getReport(): IReport {
         return this._reporter.getReport();
     }
 
-    resetReport() {
+    resetReport(): void {
         this._reporter.reset();
     }
 
@@ -62,7 +62,7 @@ export class RuntimeOperator extends KeyValue implements IEvaluatable, IJson {
     }
 
     evaluate<PrimitiveThing>(obj: PrimitiveThing): boolean {
-        let objValue = Util.resolveObjectValue<Primitive, PrimitiveThing>(this.key, obj);
+        const objValue = Util.resolveObjectValue<Primitive, PrimitiveThing>(this.key, obj);
         this._reporter.start();
         const result = !!this._def.func.apply(this._def.func, [objValue]);
         this._reporter.stop(result);
