@@ -45,7 +45,7 @@ For old browsers and node12 (umd):
 * `lessThanEquals(key, value)` - True if object[key] is less or equal to value. Alias=```lte```. Chainable.
 * `lte(key, value)` - shorthand for above.
 * `like(key, value)` - True if object[key] is like value (case sensitive). Use * as wildcard. Alias=```like```. Chainable.
-* `ilike(key, value)` - True if object[key] is like value (case insensitive). Use * as wildcard. Chainable.
+* `ilike(key, value)` - True if object[key] is like value (case insensitive). Use * as wildcard. Alias=```ilike```. Chainable.
 * `any(key, values[])` - True if object[key] equals to any of the values.  Chainable.
 
 ### Evaluation
@@ -71,8 +71,7 @@ For old browsers and node12 (umd):
 * `getKeysAndValues()` - Returns keys and values for all comparison operators. This can be useful when restoring state to something (forms etc). If the same key has been used multiple times an array of values are returned.
 
 ### Remember .done()
-Builder methods are executed from the current logical level. That means you might not get the result you expected as you
-might have a deep hierachy. Remember to first call ```done()``` which moves you to the root logical.
+Builder methods are executed from the current logical level. That means you might not get the result you expected as you might have a deep hierachy. Remember to first call ```done()``` which moves you to the root logical.
 
 ## An example
 So maybe you have a bunch of movies and you want some good comedies.

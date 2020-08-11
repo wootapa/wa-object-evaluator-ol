@@ -3,21 +3,7 @@ import { ClassDict, IEvaluatable, IJson, IJsonDump, IRuntimeOperatorCallback, Pr
 import { Reporter, Util } from './wa-util';
 
 export class RuntimeOperatorDef {
-    private _alias: string;
-    private _func: IRuntimeOperatorCallback;
-
-    constructor(alias: string, func: IRuntimeOperatorCallback) {
-        this._alias = alias;
-        this._func = func;
-    }
-
-    get alias(): string {
-        return this._alias;
-    }
-
-    get func(): IRuntimeOperatorCallback {
-        return this._func;
-    }
+    constructor(public alias: string, public func: IRuntimeOperatorCallback) { }
 }
 
 export class RuntimeOperator extends KeyValue implements IEvaluatable, IJson {

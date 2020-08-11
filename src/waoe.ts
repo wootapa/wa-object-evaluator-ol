@@ -6,5 +6,6 @@ const or = (): Builder => Builder.or();
 const not = (): Builder => Builder.not();
 const fromJson = (json: IJsonDump | string): Builder => Builder.fromJson(json);
 const define = (alias: string, func: IRuntimeOperatorCallback): void => Builder.define(alias, func);
+const getOperatorAlias = (): string[] => Builder.getOperatorAlias();
 
-export { and, or, not, fromJson, define };
+export { and, or, not, fromJson, define, getOperatorAlias };

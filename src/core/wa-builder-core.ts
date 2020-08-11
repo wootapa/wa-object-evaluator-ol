@@ -1,4 +1,4 @@
-import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonIsNull, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue } from './wa-comparison';
+import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonILike, ComparisonIsNull, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue } from './wa-comparison';
 import { ClassDict, IBuilderOpts, IDictionary, IJsonDump, IReportSummary, IRuntimeOperatorCallback, Operator, Primitive, PrimitiveThing } from './wa-contracts';
 import { Logical, LogicalAnd, LogicalNot, LogicalOr } from './wa-logical';
 import { RuntimeOperator, RuntimeOperatorDef } from './wa-runtime';
@@ -15,7 +15,8 @@ let clazzDict: ClassDict = {
     [ComparisonGreaterThanEquals.alias]: ComparisonGreaterThanEquals,
     [ComparisonLessThan.alias]: ComparisonLessThan,
     [ComparisonLessThanEquals.alias]: ComparisonLessThanEquals,
-    [ComparisonLike.alias]: ComparisonLike
+    [ComparisonLike.alias]: ComparisonLike,
+    [ComparisonILike.alias]: ComparisonILike
 };
 
 export interface IBuilder { }
@@ -112,7 +113,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @returns All operator aliases
      */
     static getOperatorAlias(): string[] {
-        return Object.keys(clazzDict);
+        return Object.keys(clazzDict).sort();
     }
 
     /**
@@ -497,7 +498,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @returns Builder
      */
     like(key: string, value: PrimitiveThing): T {
-        this._logical.add(new ComparisonLike(key, value, { matchCase: true }));
+        this._logical.add(new ComparisonLike(key, value));
         return this._this;
     }
 
@@ -511,7 +512,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @returns Builder
      */
     ilike(key: string, value: PrimitiveThing): T {
-        this._logical.add(new ComparisonLike(key, value, { matchCase: false }));
+        this._logical.add(new ComparisonILike(key, value));
         return this._this;
     }
 
@@ -523,7 +524,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      *
      * @returns Builder
      */
-    any(key: string, values: PrimitiveThing[]): T {
+    any(key: string, values: Primitive[]): T {
         if (values.length) {
             const or = this._logical.add(new LogicalOr(this._logical)) as Logical;
             values.forEach(value => or.add(new ComparisonEquals(key, value)));
@@ -536,7 +537,8 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      *
      * @param alias - Alias of the operator
      * @param key - The key/property to evaluate
-     * @param value - The value to compare
+     * @param value - Optional value to compare
+     * @param opts - Optional operator options
      *
      * @returns Builder
      */

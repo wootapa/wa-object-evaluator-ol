@@ -164,7 +164,7 @@ describe('like', () => {
             .operator('lte', 'age', person.age)
             .operator('isnull', 'null', person.null)
             .operator('like', 'name', 'Mr*')
-            .operator('like', 'name', 'mr*', { matchCase: false })
+            .operator('ilike', 'name', 'mr*')
             .done()
             .evaluate(person);
 
