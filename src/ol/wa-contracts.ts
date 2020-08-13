@@ -17,3 +17,7 @@ export interface IOlOpts {
 export interface IDistanceOpts extends IOlOpts {
     distance: number
 }
+
+export interface IFilterOpts {
+    geometryName?: string
+}

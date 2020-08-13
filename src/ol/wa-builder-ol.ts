@@ -2,7 +2,7 @@ import { ProjectionLike } from 'ol/proj';
 import Projection from 'ol/proj/Projection';
 import { BuilderCoreBase } from '../core/wa-builder-core';
 import { ClassDict } from '../core/wa-contracts';
-import { FeatureThing, IDistanceOpts, IOlBuilderOpts } from './wa-contracts';
+import { FeatureThing, IDistanceOpts, IFilterOpts, IOlBuilderOpts } from './wa-contracts';
 import { WAFeature } from './wa-feature';
 import { WAFilter } from './wa-filter';
 import { IOlOperators, OlContains, OlDisjoint, OlDistanceBeyond, OlDistanceWithin, OlIntersects, OlWithin } from './wa-ol';
@@ -170,10 +170,12 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
     /**
      * Returns operators as an OGC CQL query.
      *
+     * @param opts - Optional serializer settings.
+     *
      * @returns OGC CQL query
      */
-    asOgcCql(): string {
-        return WAFilter.asOgcCql(this._logical);
+    asOgcCql(opts?: IFilterOpts): string {
+        return WAFilter.asOgcCql(this._logical, opts);
     }
 
     /**
@@ -182,9 +184,11 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
      * @remarks
      * Wrap in encodeURI to avoid encoding issues
      *
+     * @param opts - Optional serializer settings.
+     *
      * @returns OGC XML query
      */
-    asOgcXml(): string {
-        return WAFilter.asOgcXml(this._logical);
+    asOgcXml(opts?: IFilterOpts): string {
+        return WAFilter.asOgcXml(this._logical, opts);
     }
 }

@@ -1,7 +1,7 @@
 import { Comparison, ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonIsNull, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike } from '../core/wa-comparison';
 import { Operator } from '../core/wa-contracts';
 import { Logical, LogicalAnd, LogicalNot, LogicalOr } from '../core/wa-logical';
-import { IDistanceOpts } from './wa-contracts';
+import { IDistanceOpts, IFilterOpts } from './wa-contracts';
 import { OlBase, OlContains, OlDisjoint, OlDistanceBeyond, OlDistanceWithin, OlIntersects, OlWithin } from './wa-ol';
 
 export class WAFilter {
@@ -10,28 +10,32 @@ export class WAFilter {
         /* Empty */
      }
 
-    static asOgcCql = (logical: Logical): string => {
+    static asOgcCql = (logical: Logical, opts?: IFilterOpts): string => {
         const walk = (operator: Operator): string => {
             // Openlayers
-            if (operator instanceof OlIntersects) {
-                return `INTERSECTS(${operator.key}, ${operator.feature.asWkt()})`;
-            }
-            if (operator instanceof OlDisjoint) {
-                return `DISJOINT(${operator.key}, ${operator.feature.asWkt()})`;
-            }
-            if (operator instanceof OlContains) {
-                return `CONTAINS(${operator.key}, ${operator.feature.asWkt()})`;
-            }
-            if (operator instanceof OlWithin) {
-                return `WITHIN(${operator.key}, ${operator.feature.asWkt()})`;
-            }
-            if (operator instanceof OlDistanceWithin) {
-                const opts = operator.opts as IDistanceOpts;
-                return `DWITHIN(${operator.key}, ${operator.feature.asWkt()}, ${opts.distance}, m)`;
-            }
-            if (operator instanceof OlDistanceBeyond) {
-                const opts = operator.opts as IDistanceOpts;
-                return `BEYOND(${operator.key}, ${operator.feature.asWkt()}, ${opts.distance}, m)`;
+            if (operator instanceof OlBase) {
+                const property = opts?.geometryName ?? operator.key;
+
+                if (operator instanceof OlIntersects) {
+                    return `INTERSECTS(${property}, ${operator.feature.asWkt()})`;
+                }
+                if (operator instanceof OlDisjoint) {
+                    return `DISJOINT(${property}, ${operator.feature.asWkt()})`;
+                }
+                if (operator instanceof OlContains) {
+                    return `CONTAINS(${property}, ${operator.feature.asWkt()})`;
+                }
+                if (operator instanceof OlWithin) {
+                    return `WITHIN(${property}, ${operator.feature.asWkt()})`;
+                }
+                if (operator instanceof OlDistanceWithin) {
+                    const opts = operator.opts as IDistanceOpts;
+                    return `DWITHIN(${property}, ${operator.feature.asWkt()}, ${opts.distance}, m)`;
+                }
+                if (operator instanceof OlDistanceBeyond) {
+                    const opts = operator.opts as IDistanceOpts;
+                    return `BEYOND(${property}, ${operator.feature.asWkt()}, ${opts.distance}, m)`;
+                }
             }
             // Comparison
             if (operator instanceof Comparison) {
@@ -78,33 +82,33 @@ export class WAFilter {
         return walk(logical);
     }
 
-    static asOgcXml = (logical: Logical): string => {
+    static asOgcXml = (logical: Logical, opts?: IFilterOpts): string => {
         const walk = (operator: Operator): string => {
             // Openlayers
             if (operator instanceof OlBase) {
-                const property = `<ogc:PropertyName>${operator.key}</ogc:PropertyName>`;
+                const property = `<ogc:PropertyName>${opts?.geometryName ?? operator.key}</ogc:PropertyName>`;
 
                 if (operator instanceof OlIntersects) {
-                    return `<ogc:Intersects>${property}${operator.feature.toGml()}</ogc:Intersects>`;
+                    return `<ogc:Intersects>${property}${operator.feature.asGml()}</ogc:Intersects>`;
                 }
                 if (operator instanceof OlDisjoint) {
-                    return `<ogc:Disjoint>${property}${operator.feature.toGml()}</ogc:Disjoint>`;
+                    return `<ogc:Disjoint>${property}${operator.feature.asGml()}</ogc:Disjoint>`;
                 }
                 if (operator instanceof OlContains) {
-                    return `<ogc:Contains>${property}${operator.feature.toGml()}</ogc:Contains>`;
+                    return `<ogc:Contains>${property}${operator.feature.asGml()}</ogc:Contains>`;
                 }
                 if (operator instanceof OlWithin) {
-                    return `<ogc:Within>${property}${operator.feature.toGml()}</ogc:Within>`;
+                    return `<ogc:Within>${property}${operator.feature.asGml()}</ogc:Within>`;
                 }
                 if (operator instanceof OlDistanceWithin) {
                     const opts = operator.opts as IDistanceOpts;
                     const distance = `<Distance units="m">${opts.distance}</Distance>`;
-                    return `<ogc:DWithin>${property}${operator.feature.toGml()}${distance}</ogc:DWithin>`;
+                    return `<ogc:DWithin>${property}${operator.feature.asGml()}${distance}</ogc:DWithin>`;
                 }
                 if (operator instanceof OlDistanceBeyond) {
                     const opts = operator.opts as IDistanceOpts;
                     const distance = `<Distance units="m">${opts.distance}</Distance>`;
-                    return `<ogc:Beyond>${property}${operator.feature.toGml()}${distance}</ogc:Beyond>`;
+                    return `<ogc:Beyond>${property}${operator.feature.asGml()}${distance}</ogc:Beyond>`;
                 }
             }
             // Comparison

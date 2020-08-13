@@ -4,18 +4,21 @@ import { Feature } from 'ol';
 import { Coordinate } from 'ol/coordinate';
 import { Extent, getCenter } from 'ol/extent';
 import GeoJSON from 'ol/format/GeoJSON';
+import GML3 from 'ol/format/GML3';
 import WKT from 'ol/format/WKT';
 import Geometry from 'ol/geom/Geometry';
 import GeometryLayout from 'ol/geom/GeometryLayout';
 import LineString from 'ol/geom/LineString';
 import Point from 'ol/geom/Point';
-import Polygon, { fromExtent } from 'ol/geom/Polygon';
+import Polygon, { fromExtent, fromCircle } from 'ol/geom/Polygon';
 import { getDistance } from 'ol/sphere';
 import { IDictionary } from '../core/wa-contracts';
 import { FeatureThing } from './wa-contracts';
+import Circle from 'ol/geom/Circle';
 
 const formatWkt = new WKT();
 const formatJson = new GeoJSON();
+const formatGml = new GML3();
 
 export class WAFeature {
     constructor(private _feature: Feature) { }
@@ -32,10 +35,10 @@ export class WAFeature {
             return WAFeature.factory(obj.call(obj, WAFeature.GEOMETRYNAME_DEFAULT));
         }
         else if (obj instanceof Feature) {
-            return new WAFeature(obj).assertSimple();
+            return new WAFeature(obj).assertValid();
         }
         else if (obj instanceof Geometry) {
-            return new WAFeature(new Feature(obj)).assertSimple();
+            return new WAFeature(new Feature(obj)).assertValid();
         }
         else if (obj instanceof Array) {
             if (obj.length > 0 && obj.length % 2 === 0) {
@@ -65,20 +68,20 @@ export class WAFeature {
                 const geometryKey = obj[WAFeature.GEOMETRYNAME_HINT];
                 return WAFeature.factory(obj[geometryKey]);
             }
-            return new WAFeature(formatJson.readFeature(obj)).assertSimple();
+            return new WAFeature(formatJson.readFeature(obj)).assertValid();
         }
         else if (typeof (obj) === 'string') {
             return new WAFeature(obj.trimLeft().charAt(0) === '{'
                 ? formatJson.readFeature(obj)
                 : formatWkt.readFeature(obj)
-            ).assertSimple();
+            ).assertValid();
         }
         throw new Error('Unsupported geometry type');
     }
 
-    assertSimple(): WAFeature {
-        if (this.isMulti()) {
-            throw new Error('Multi-geometries not supported');
+    assertValid(): WAFeature {
+        if (this.isCircle()) {
+            this._feature.setGeometry(fromCircle(this.getGeometry() as Circle));
         }
         return this;
     }
@@ -125,6 +128,10 @@ export class WAFeature {
         return this.getGeometry().getType().includes('Multi');
     }
 
+    isCircle(): boolean {
+        return this.getGeometry().getType() === 'Circle';
+    }
+
     isPolygon(): boolean {
         return this.getGeometry().getType() === 'Polygon';
     }
@@ -164,20 +171,8 @@ export class WAFeature {
         return formatJson.writeGeometryObject(this.getGeometryLonLat(projCode)) as any;
     }
 
-    toGml(): string {
-        if (this.isPoint()) {
-            return `<gml:Point><gml:pos>${(this.getGeometry() as Point).getFlatCoordinates().join(' ')}</gml:pos></gml:Point>`;
-        }
-        if (this.isLineString()) {
-            return `<gml:LineString><gml:posList>${(this.getGeometry() as LineString).getFlatCoordinates().join(' ')}</gml:posList></gml:LineString>`;
-        }
-        if (this.isPolygon()) {
-            const rings = (this.getGeometry() as Polygon).getLinearRings().map((ring, idx) => {
-                const ringType = idx == 0 ? 'exterior' : 'interior';
-                return `<gml:${ringType}><gml:LinearRing><gml:posList>${ring.getFlatCoordinates().join(' ')}</gml:posList></gml:LinearRing></gml:${ringType}>`;
-            });
-            return `<gml:Polygon>${rings.join('')}</gml:Polygon>`;
-        }
+    asGml(): string {
+        return formatGml.writeGeometry(this.getGeometry());
     }
 
     intersects(feature: WAFeature, projCode: string): boolean {
