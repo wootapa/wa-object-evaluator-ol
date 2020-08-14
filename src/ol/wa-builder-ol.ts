@@ -85,7 +85,6 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
 
     /**
      * Returns true when object intersects value.
-     * Inverse of `disjoint`.
      *
      * @param value - The featurething to compare
      *
@@ -98,7 +97,6 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
 
     /**
      * Returns true when object do not intersects value.
-     * Inverse of `intersects`.
      *
      * @param value - The featurething to compare
      *
@@ -111,7 +109,6 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
 
     /**
      * Returns true when object completely contains value.
-     * Inverse of `within`.
      *
      * @param value - The featurething to compare
      *
@@ -124,7 +121,6 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
 
     /**
      * Returns true when object is completely within value.
-     * Inverse of `contains`.
      *
      * @param value - The featurething to compare
      *
@@ -137,7 +133,6 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
 
     /**
      * Returns true when object is no more than specified distance from value.
-     * Inverse of `distanceBeyond`.
      *
      * @remarks Requires a correct projection.
      *
@@ -153,7 +148,6 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
 
     /**
      * Returns true when object is more than specified distance from value.
-     * Inverse of `distanceWithin`.
      *
      * @remarks Requires a correct projection.
      *

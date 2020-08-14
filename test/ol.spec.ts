@@ -21,6 +21,8 @@ const polyWKT = formatWKT.writeGeometry(poly);
 const polyJSON = formatJSON.writeGeometry(poly);
 const polyFeature = new Feature(poly);
 const polyFeatureJSON = formatJSON.writeFeature(polyFeature);
+const polyFeatureJSONObject = formatJSON.writeFeatureObject(polyFeature);
+const polyFeatureJSONObjectString = JSON.stringify(polyFeatureJSONObject);
 const polyFeatureWKT = formatWKT.writeFeature(polyFeature);
 const polyFeatureProperties = polyFeature.getProperties();
 const pointCenter = new Point(getCenter(poly.getExtent()));
@@ -37,6 +39,8 @@ describe('ol', () => {
             .intersects(polyJSON)
             .intersects(polyFeature)
             .intersects(polyFeatureJSON)
+            .intersects(polyFeatureJSONObject)
+            .intersects(polyFeatureJSONObjectString)
             .intersects(polyFeatureWKT)
             .intersects(polyFeatureProperties)
             .done()

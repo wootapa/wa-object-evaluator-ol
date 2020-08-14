@@ -1,5 +1,7 @@
 # Object Evaluator - Openlayers
-This builds on top of https://github.com/wootapa/wa-object-evaluator with spatial operators for Openlayers and OGC query output.
+Building code for webgis applications that needs feature-filtering on both client and server can be a pain. Instead of ending up with scattered javascript mixed with fragile XML/CQL generators, this library attempts to alleviate this by providing a single interface where you define your rules. When done, simply evaluate the features or generate the equivalent CQL/XML for your OGC compliant server.
+
+This library extends https://github.com/wootapa/wa-object-evaluator with spatial operators and is intended to be used with Openlayers 6+.
 
 [Demo](https://i5u5c.csb.app/)
 
@@ -16,38 +18,42 @@ Old browsers (umd):
 // waoe.ol.and() ...
 ```
 
-## Dependencies
-OpenLayers 6+
-
 ## Methods
-On top of the [existing](https://github.com/wootapa/wa-object-evaluator/blob/master/README.md) library, the following is added.
+Below is only the spatial methods. See [base](https://github.com/wootapa/wa-object-evaluator/blob/master/README.md) library for the standard operators available for comparing attributes.
 
 ### Statics
 * `defaultProjection(projection)` - Sets default projection for all new builders. The projection is assumed to be known by OpenLayers and values are assumed to be transformed. Defaults to [EPSG:3857](http://epsg.io/3857).
 
 ### Spatial operators
-Operator values can be an ol Feature/Geometry, WKT, GeoJSON or an array(2=point, 4=extent=polygon, 6=linestring, 8+=linestring/polygon). 
+An operator value = valid geometry. See below for options. 
 
 * `intersects(value)` - True when object intersects value. 
-* `disjoint(value)` - True when object do not intersects value (inverse of intersects).
+* `disjoint(value)` - True when object do not intersects value.
 * `contains(value)` - True when object completely contains value.
-* `within(value)` - True when object is completely within value (inverse of contains).
+* `within(value)` - True when object is completely within value.
 * `distanceWithin(value, distance)` -  True when object is no more than specified distance (in meters) from value. Requires a correct projection.
-* `distanceBeyond(value, distance)` -  True when object is more than specified distance (in meters) from value (inverse of dwithin). Requires a correct projection.
+* `distanceBeyond(value, distance)` -  True when object is more than specified distance (in meters) from value. Requires a correct projection.
 
 ### Other
 * `projection(projection)` - Overrides the default projection for current builder.
-* `asOgcCql()` - Outputs operators as OGC CQL.
-* `asOgcXML()` - Outputs operators as OGC XML. You might want to wrap output in `encodeURI` to avoid encoding issues.
+* `asOgcCql({ geometryName? })` - Outputs as OGC CQL.
+* `asOgcXML({ geometryName? })` - Outputs as OGC XML.
 
-OGC CQL/XML outputs the geometryname as `geometry`. To control it, use an ol/Feature as value with a [geometryName](https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html#setGeometryName).
+By default the CQL/XML serializers outputs the geometryname as `geometry` unless you passed an ol/Feature with a set [geometryName](https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html#setGeometryName) to the operator(s). Providing a ```geometryName``` will override this behavior. Ex ```oe.asOgcCql({ geometryName: 'the_geom'})```.
 
+## What is a geometry?
+- ol/Feature (can carry attributes)
+- ol/Geometry
+- An object with a valid ol/Geometry (ex ```feature.getProperties()```) (can carry attributes)
+- WKT
+- GeoJSON (can carry attributes)
+- Array(2=point, 4=extent=polygon, 6=linestring, 8+=linestring/polygon)
 
-## Evaluating objects
-Just as operator values, it's not strictly required to pass an ol/Feature as the evaluation object; but you'll need it if you also want to compare attributes with the standard operators. That said, object can be an ol Feature/Geometry, WKT, GeoJSON or an array(2=point, 4=extent=polygon, 6=linestring, 8+=linestring/polygon).
+## Evaluating
+When evaluating, make sure you pass a geometry that can carry attributes; or you will not be able to compare attributes using the standard operators. Got it? Great!
 
 ## An example
-So maybe you have a bunch of features and Johnny asked you for all wells.
+So maybe you have a bunch of features and Günter asked you for all wells.
 ```javascript
 const oe = and().eq('type', 'well').done();
 ```
@@ -77,7 +83,7 @@ Apply on client features...
 const features = [...];
 const wells = features.filter(oe.evaluate);
 ```
-...or output as CQL/XML.
+...or output as CQL/XML and pass it to your OGC compliant server.
 ```javascript
 const cql = oe.asOgcCql();
 const xml = oe.asOgcXml();
