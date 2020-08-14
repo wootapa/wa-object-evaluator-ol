@@ -64,10 +64,21 @@ export class WAFeature {
             }
         }
         else if (obj instanceof Object) {
+            // Resolving from a spatial operator?
             if (WAFeature.GEOMETRYNAME_HINT in obj) {
                 const geometryKey = obj[WAFeature.GEOMETRYNAME_HINT];
                 return WAFeature.factory(obj[geometryKey]);
             }
+            // Resolving from builder?
+            const candidate = Object.entries(obj).find(([,v]) => v instanceof Geometry);
+            if (candidate) {
+                const [key, geometry] = candidate;
+                const feature = new Feature(obj);
+                feature.setGeometryName(key);
+                feature.setGeometry(geometry);
+                return new WAFeature(feature);
+            }
+            // Probably parsed geojson
             return new WAFeature(formatJson.readFeature(obj)).assertValid();
         }
         else if (typeof (obj) === 'string') {
