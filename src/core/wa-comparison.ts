@@ -85,19 +85,7 @@ export abstract class Comparison extends KeyValue implements IEvaluatable, IJson
             result = evalValue <= this._value;
         }
         else if (this instanceof ComparisonLike) {
-            const opts = this._opts as ILikeOptions;
-
-            if (evalValue && this._value) {
-                if (!this['valueRe']) {
-                    const v = `*${this._value.toString()}*`
-                        .replace(/[-[\]/{}()+.\\^$|]/g, '\\$&')
-                        .replace(new RegExp(`\\${opts.wildCard}`, 'g'), '.*')
-                        .replace(/\?/g, '.');
-                    const flags = !opts.matchCase ? 'i' : '';
-                    this['valueRe'] = new RegExp(v, flags);
-                }
-                result = this['valueRe'].test(evalValue);
-            }
+            result = this._valueRe.test(evalValue?.toString());
         }
         this._reporter.stop(result);
         return result;
@@ -119,7 +107,7 @@ export interface IComparison<T> {
     lte(key: string, value: PrimitiveThing): T;
     like(key: string, value: PrimitiveThing, options?: IComparisonOpts): T;
     ilike(key: string, value: PrimitiveThing, options?: IComparisonOpts): T;
-    any(key: string, values: PrimitiveThing[]): T;
+    any(key: string, values: Primitive[]): T;
 }
 
 export class ComparisonEquals extends Comparison {
@@ -148,10 +136,29 @@ export class ComparisonLessThanEquals extends Comparison {
 
 export class ComparisonLike extends Comparison {
     static alias = 'like';
+    _valueRe: RegExp;
+
     constructor(key: string, value: PrimitiveThing, opts?: ILikeOptions) {
         super(key, value, { matchCase: true, wildCard: '*', ...opts });
+
+        // Construct regex
+        const v = this._value.toString()
+            .replace(/[-[\]/{}()+.\\^$|]/g, '\\$&')
+            .replace(new RegExp(`\\${this.opts.wildCard}`, 'g'), '.*')
+            .replace(/\?/g, '.');
+        const flags = !this.opts.matchCase ? 'i' : '';
+        this._valueRe = new RegExp(v, flags);
     }
+
     get opts(): ILikeOptions {
         return this._opts as ILikeOptions;
+    }
+}
+
+export class ComparisonILike extends ComparisonLike {
+    static alias = 'ilike';
+
+    constructor(key: string, value: PrimitiveThing, opts?: ILikeOptions) {
+        super(key, value, { ...opts, matchCase: false });
     }
 }
