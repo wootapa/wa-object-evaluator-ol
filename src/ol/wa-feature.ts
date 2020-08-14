@@ -6,15 +6,15 @@ import { Extent, getCenter } from 'ol/extent';
 import GeoJSON from 'ol/format/GeoJSON';
 import GML3 from 'ol/format/GML3';
 import WKT from 'ol/format/WKT';
+import Circle from 'ol/geom/Circle';
 import Geometry from 'ol/geom/Geometry';
 import GeometryLayout from 'ol/geom/GeometryLayout';
 import LineString from 'ol/geom/LineString';
 import Point from 'ol/geom/Point';
-import Polygon, { fromExtent, fromCircle } from 'ol/geom/Polygon';
+import Polygon, { fromCircle, fromExtent } from 'ol/geom/Polygon';
 import { getDistance } from 'ol/sphere';
 import { IDictionary } from '../core/wa-contracts';
 import { FeatureThing } from './wa-contracts';
-import Circle from 'ol/geom/Circle';
 
 const formatWkt = new WKT();
 const formatJson = new GeoJSON();
@@ -76,21 +76,24 @@ export class WAFeature {
                 const feature = new Feature(obj);
                 feature.setGeometryName(key);
                 feature.setGeometry(geometry);
-                return new WAFeature(feature);
+                return new WAFeature(feature).assertValid();
             }
             // Probably parsed geojson
             return new WAFeature(formatJson.readFeature(obj)).assertValid();
         }
         else if (typeof (obj) === 'string') {
-            return new WAFeature(obj.trimLeft().charAt(0) === '{'
-                ? formatJson.readFeature(obj)
-                : formatWkt.readFeature(obj)
-            ).assertValid();
+            switch (obj.trimLeft().charAt(0)) {
+                case '{': return new WAFeature(formatJson.readFeature(obj)).assertValid();
+                default: return new WAFeature(formatWkt.readFeature(obj)).assertValid();
+            }
         }
         throw new Error('Unsupported geometry type');
     }
 
     assertValid(): WAFeature {
+        if (!(this.getGeometry() instanceof Geometry)) {
+            throw new Error('Not a geometry');
+        }
         if (this.isCircle()) {
             this._feature.setGeometry(fromCircle(this.getGeometry() as Circle));
         }

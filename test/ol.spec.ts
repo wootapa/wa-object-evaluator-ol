@@ -10,11 +10,19 @@ import { and, defaultProjection, fromJson } from '../src/waoe.ol';
 
 defaultProjection('EPSG:3857');
 
+const formatWKT = new WKT();
+const formatJSON = new GeoJSON();
+
 const polyExtent: Extent = [1558356.9283, 7559163.7738, 1581670.2220, 7573457.4981];
 const poly = fromExtent(polyExtent);
-const polyWkt = new WKT().writeGeometry(poly);
-const polyJson = new GeoJSON().writeGeometry(poly);
+const polyCoords = poly.getFlatCoordinates();
+const polyFunction = () => () => poly;
+const polyWKT = formatWKT.writeGeometry(poly);
+const polyJSON = formatJSON.writeGeometry(poly);
 const polyFeature = new Feature(poly);
+const polyFeatureJSON = formatJSON.writeFeature(polyFeature);
+const polyFeatureWKT = formatWKT.writeFeature(polyFeature);
+const polyFeatureProperties = polyFeature.getProperties();
 const pointCenter = new Point(getCenter(poly.getExtent()));
 const lineCrosses = new LineString([getTopLeft(polyExtent), getBottomRight(polyExtent)]);
 
@@ -22,9 +30,15 @@ describe('ol', () => {
     it('polys of different formats intersects', () => {
         const result = and()
             .intersects(polyExtent)
+            .intersects(polyFunction)
             .intersects(poly)
-            .intersects(polyWkt)
-            .intersects(polyJson)
+            .intersects(polyCoords)
+            .intersects(polyWKT)
+            .intersects(polyJSON)
+            .intersects(polyFeature)
+            .intersects(polyFeatureJSON)
+            .intersects(polyFeatureWKT)
+            .intersects(polyFeatureProperties)
             .done()
             .evaluate(polyFeature);
 
