@@ -29,7 +29,7 @@ export default [
         ],
         output: [
             {
-                file: pkg.browser, format: 'umd', sourcemap: true, banner: banner, name: 'waoe.ol',
+                file: pkg.browser, format: 'umd', sourcemap: true, banner: banner, interop: 'auto', name: 'waoe.ol',
                 globals: {
                     'ol': 'ol',
                     'ol/proj': 'ol.proj',
@@ -44,7 +44,7 @@ export default [
                     'ol/format/GeoJSON': 'ol.format.GeoJSON'
                 }
             },
-            { file: pkg.module, format: 'es', sourcemap: true, banner: banner }
+            { file: pkg.module, format: 'es', sourcemap: true, banner: banner, interop: 'auto' }
         ],
     }
 ];
