@@ -1,11 +1,11 @@
-import { BuilderCore as Builder } from './core/wa-builder-core';
+import { EvaluatorCore as Evaluator } from './core/wa-evaluator';
 import { IJsonDump, IRuntimeOperatorCallback } from './core/wa-contracts';
 
-const and = (): Builder => Builder.and();
-const or = (): Builder => Builder.or();
-const not = (): Builder => Builder.not();
-const fromJson = (json: IJsonDump | string): Builder => Builder.fromJson(json);
-const define = (alias: string, func: IRuntimeOperatorCallback): void => Builder.define(alias, func);
-const getOperatorAlias = (): string[] => Builder.getOperatorAlias();
+const and = (): Evaluator => Evaluator.and();
+const or = (): Evaluator => Evaluator.or();
+const not = (): Evaluator => Evaluator.not();
+const fromJson = (json: IJsonDump | string): Evaluator => Evaluator.fromJson(json);
+const define = (alias: string, func: IRuntimeOperatorCallback): void => Evaluator.define(alias, func);
+const getOperatorAlias = (): string[] => Evaluator.getOperatorAlias();
 
-export { and, or, not, fromJson, define, getOperatorAlias };
+export { Evaluator, and, or, not, fromJson, define, getOperatorAlias };

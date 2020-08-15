@@ -5,7 +5,7 @@ import pkg from './package.json';
 import resolve from '@rollup/plugin-node-resolve';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import cleaner from 'rollup-plugin-cleaner';
-import { terser } from "rollup-plugin-terser";
+import { terser } from 'rollup-plugin-terser';
 
 const banner = `/*! ${pkg.name} v${pkg.version} | author:${pkg.author} | license:${pkg.license} */`;
 
@@ -27,9 +27,7 @@ export default [
             })
         ],
         output: [
-            {
-                file: pkg.browser, format: 'umd', sourcemap: true, banner: banner, name: 'waoe'
-            },
+            { file: pkg.browser, format: 'umd', sourcemap: true, banner: banner, name: 'waoe' },
             { file: pkg.module, format: 'es', sourcemap: true, banner: banner }
         ],
     }

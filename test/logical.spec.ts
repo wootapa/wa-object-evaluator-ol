@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { and, or } from '../src/waoe';
+import { and, or, not } from '../src/waoe';
 
 const person = {
     fname: 'Andreas',
@@ -33,8 +33,7 @@ describe('and', () => {
 
 describe('or', () => {
     it('should equal fname or lname', () => {
-        const result = and()
-            .or()
+        const result = or()
             .eq('fname', person.fname)
             .eq('lname', 'Miyagi')
             .done()
@@ -43,8 +42,7 @@ describe('or', () => {
         expect(result).true;
     });
     it('should equal fname but not lname but will short-circuit', () => {
-        const result = and()
-            .or()
+        const result = or()
             .eq('fname', person.fname)
             .eq('idontexistandwontbeevaluated', 'ok')
             .done()
@@ -89,8 +87,7 @@ describe('or', () => {
 
 describe('not', () => {
     it('should not equal fname', () => {
-        const result = and()
-            .not()
+        const result = not()
             .eq('fname', 'Doogie')
             .done()
             .evaluate(person);
