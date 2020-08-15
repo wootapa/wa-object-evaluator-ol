@@ -69,8 +69,8 @@ export class WAFeature {
                 const geometryKey = obj[WAFeature.GEOMETRYNAME_HINT];
                 return WAFeature.factory(obj[geometryKey]);
             }
-            // Resolving from builder?
-            const candidate = Object.entries(obj).find(([,v]) => v instanceof Geometry);
+            // Resolving from evaluator?
+            const candidate = Object.entries(obj).find(([, v]) => v instanceof Geometry);
             if (candidate) {
                 const [key, geometry] = candidate;
                 const feature = new Feature(obj);

@@ -1,5 +1,5 @@
 import { ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonILike, ComparisonIsNull, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike, IComparison, KeyValue } from './wa-comparison';
-import { ClassDict, IBuilderOpts, IDictionary, IJsonDump, IReportSummary, IRuntimeOperatorCallback, Operator, Primitive, PrimitiveThing } from './wa-contracts';
+import { ClassDict, IEvaluatorOpts, IDictionary, IJsonDump, IReportSummary, IRuntimeOperatorCallback, Operator, Primitive, PrimitiveThing } from './wa-contracts';
 import { Logical, LogicalAnd, LogicalNot, LogicalOr } from './wa-logical';
 import { RuntimeOperator, RuntimeOperatorDef } from './wa-runtime';
 import { Util } from './wa-util';
@@ -19,28 +19,28 @@ let clazzDict: ClassDict = {
     [ComparisonILike.alias]: ComparisonILike
 };
 
-export interface IBuilder { }
-export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements IBuilder, IComparison<T> {
+export interface IEvaluator { }
+export abstract class EvaluatorBase<T extends EvaluatorBase<T>> implements IEvaluator, IComparison<T> {
     // Root logical operator.
     protected _logical: Logical;
 
-    // The instance we return from builder
+    // The instance we return from evaluator
     protected _this: T;
 
     // Provided by subclass so we can return the correct type
-    protected abstract _getBuilder(): T;
+    protected abstract _getEvaluator(): T;
 
     // Provided by subclass so we know how to create unknown operators
     protected abstract _getClassDict(): ClassDict;
 
     // Provides configuration for subclass when restoring from json
-    protected abstract _setConfiguration(config: IBuilderOpts): void;
+    protected abstract _setConfiguration(config: IEvaluatorOpts): void;
 
     // Gets configuration from subclass when serializing to json
-    protected abstract _getConfiguration(): IBuilderOpts;
+    protected abstract _getConfiguration(): IEvaluatorOpts;
 
     constructor() {
-        this._this = this._getBuilder();
+        this._this = this._getEvaluator();
         // Use AND by default. Overridden in static constructors.
         this._logical = new LogicalAnd(this._this);
         // Merge base and implementation classmaps
@@ -48,50 +48,50 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Creates new builder from JSON.
+     * Creates new evaluator from JSON.
      *
-     * @param json - JSON (or stringified) output from a builder
-     * @returns Builder
+     * @param json - JSON (or stringified) output from an evaluator
+     * @returns Evaluator
      */
-    static fromJson<T extends BuilderCoreBase<T>>(this: { new(): T }, json: IJsonDump | string): T {
+    static fromJson<T extends EvaluatorBase<T>>(this: { new(): T }, json: IJsonDump | string): T {
         const jsonParsed = (typeof json === 'string' ? JSON.parse(json) : json) as IJsonDump;
-        const builder = new this();
-        builder._setConfiguration(jsonParsed.builderOpts);
-        builder._logical = Logical.fromJson(jsonParsed, clazzDict, builder);
-        return builder;
+        const evaluator = new this();
+        evaluator._setConfiguration(jsonParsed.evaluatorOpts);
+        evaluator._logical = Logical.fromJson(jsonParsed, clazzDict, evaluator);
+        return evaluator;
     }
 
     /**
-     * Creates a new builder with a root `and` operator (True when all child operators are true).
+     * Creates a new evaluator with a root `and` operator (True when all child operators are true).
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    static and<T extends BuilderCoreBase<T>>(this: { new(): T }): T {
-        const builder = new this();
-        builder._logical = new LogicalAnd(builder);
-        return builder;
+    static and<T extends EvaluatorBase<T>>(this: { new(): T }): T {
+        const evaluator = new this();
+        evaluator._logical = new LogicalAnd(evaluator);
+        return evaluator;
     }
 
     /**
-     * Creates a new builder with a root `or` operator (True when any child operator is true).
+     * Creates a new evaluator with a root `or` operator (True when any child operator is true).
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    static or<T extends BuilderCoreBase<T>>(this: { new(): T }): T {
-        const builder = new this();
-        builder._logical = new LogicalOr(builder);
-        return builder;
+    static or<T extends EvaluatorBase<T>>(this: { new(): T }): T {
+        const evaluator = new this();
+        evaluator._logical = new LogicalOr(evaluator);
+        return evaluator;
     }
 
     /**
-     * Creates a new builder with a root `not` operator (True when all child operators are false).
+     * Creates a new evaluator with a root `not` operator (True when all child operators are false).
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    static not<T extends BuilderCoreBase<T>>(this: { new(): T }): T {
-        const builder = new this();
-        builder._logical = new LogicalNot(builder);
-        return builder;
+    static not<T extends EvaluatorBase<T>>(this: { new(): T }): T {
+        const evaluator = new this();
+        evaluator._logical = new LogicalNot(evaluator);
+        return evaluator;
     }
 
     /**
@@ -100,7 +100,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param alias - The name of the operator
      * @param func - The function to be called
      */
-    static define<T extends BuilderCoreBase<T>>(alias: string, func: IRuntimeOperatorCallback): void {
+    static define<T extends EvaluatorBase<T>>(alias: string, func: IRuntimeOperatorCallback): void {
         if (alias in clazzDict) {
             throw new Error(`Operator:${alias} already defined`);
         }
@@ -117,18 +117,18 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Serializes builder as JSON.
+     * Serializes evaluator as JSON.
      *
-     * @returns builder as JSON
+     * @returns Evaluator as JSON
      */
     asJson(): IJsonDump {
-        return { ...this._logical.asJson(), builderOpts: this._getConfiguration() };
+        return { ...this._logical.asJson(), evaluatorOpts: this._getConfiguration() };
     }
 
     /**
-     * Returns builder as a human readable tree.
+     * Returns evaluator as a human readable tree.
      *
-     * @returns builder as a human readable tree
+     * @returns evaluator as a human readable tree
      */
     asTree(): string {
         const pad = '#';
@@ -174,7 +174,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Resets report statistics.
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     resetReport(): T {
         this._logical.resetReport();
@@ -196,7 +196,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Clears all operators in current logical and below.
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     clear(): T {
         this._logical.clear();
@@ -206,7 +206,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Moves to root logical.
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     done(): T {
         while (this._logical.getParent() !== this._this) {
@@ -218,7 +218,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Moves to parent logical (if any).
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     up(): T {
         if (this._logical.getParent() === this._this) {
@@ -231,7 +231,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Moves to first child logical.
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     down(): T {
         const childLogical = this._logical.getOperators().find((op) => op instanceof Logical) as Logical;
@@ -244,7 +244,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Moves to next logical sibling (if any).
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     next(): T {
         const parent = this._logical.getParent();
@@ -261,7 +261,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Moves to previous logical sibling (if any).
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     prev(): T {
         const parent = this._logical.getParent();
@@ -276,23 +276,23 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     }
 
     /**
-     * Returns a clone of builder.
+     * Returns a clone of evaluator.
      *
-     * @returns A new builder
+     * @returns A new Evaluator
      */
     clone(): T {
         return Util.classOf(this._this).fromJson(this._this.asJson());
     }
 
     /**
-     * Adds another builder.
+     * Adds another evaluator.
      *
-     * @param builder - The builder to add
+     * @param evaluator - The evaluator to add
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    addBuilder(builder: T): T {
-        this._logical.add(builder._logical);
+    addEvaluator(evaluator: T): T {
+        this._logical.add(evaluator._logical);
         return this._this;
     }
 
@@ -324,7 +324,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Returns true when all child operators are true.
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     and(): T {
         this._logical = this._logical.add(new LogicalAnd(this._logical)) as Logical;
@@ -334,7 +334,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Returns true when at least one child operator is true.
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     or(): T {
         this._logical = this._logical.add(new LogicalOr(this._logical)) as Logical;
@@ -344,7 +344,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
     /**
      * Returns true when all child operators are false.
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     not(): T {
         this._logical = this._logical.add(new LogicalNot(this._logical)) as Logical;
@@ -357,7 +357,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     equals(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonEquals(key, value));
@@ -370,7 +370,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     eq(key: string, value: PrimitiveThing): T {
         return this.equals(key, value);
@@ -381,7 +381,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      *
      * @param key - The key/property to evaluate
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     isNull(key: string): T {
         this._logical.add(new ComparisonIsNull(key, null));
@@ -394,7 +394,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     greaterThan(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonGreaterThan(key, value));
@@ -407,7 +407,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     gt(key: string, value: PrimitiveThing): T {
         return this.greaterThan(key, value);
@@ -419,7 +419,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     greaterThanEquals(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonGreaterThanEquals(key, value));
@@ -432,7 +432,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     gte(key: string, value: PrimitiveThing): T {
         return this.greaterThanEquals(key, value);
@@ -444,7 +444,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     lessThan(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLessThan(key, value));
@@ -457,7 +457,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     lt(key: string, value: PrimitiveThing): T {
         return this.lessThan(key, value);
@@ -469,7 +469,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     lessThanEquals(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLessThanEquals(key, value));
@@ -482,7 +482,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     lte(key: string, value: PrimitiveThing): T {
         return this.lessThanEquals(key, value);
@@ -495,7 +495,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value/pattern to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     like(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonLike(key, value));
@@ -509,7 +509,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param value - The value/pattern to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     ilike(key: string, value: PrimitiveThing): T {
         this._logical.add(new ComparisonILike(key, value));
@@ -522,7 +522,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param key - The key/property to evaluate
      * @param values - The values to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     any(key: string, values: Primitive[]): T {
         if (values.length) {
@@ -540,7 +540,7 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param value - Optional value to compare
      * @param opts - Optional operator options
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     operator(alias: string, key: string, value?: PrimitiveThing, opts?: unknown): T {
         if (!(alias in clazzDict)) {
@@ -563,19 +563,19 @@ export abstract class BuilderCoreBase<T extends BuilderCoreBase<T>> implements I
      * @param value - Optional value to compare
      * @param opts - Optional operator options
      *
-     * @returns Builder
+     * @returns Evaluator
      */
     op(alias: string, key: string, value?: PrimitiveThing, opts?: unknown): T {
         return this.operator(alias, key, value, opts);
     }
 }
 
-export class BuilderCore extends BuilderCoreBase<BuilderCore> {
+export class EvaluatorCore extends EvaluatorBase<EvaluatorCore> {
     protected _setConfiguration(): void {
         /* Empty */
     }
 
-    protected _getConfiguration(): IBuilderOpts {
+    protected _getConfiguration(): IEvaluatorOpts {
         return {};
     }
 
@@ -583,7 +583,7 @@ export class BuilderCore extends BuilderCoreBase<BuilderCore> {
         return {};
     }
 
-    protected _getBuilder(): BuilderCore {
+    protected _getEvaluator(): EvaluatorCore {
         return this;
     }
 }

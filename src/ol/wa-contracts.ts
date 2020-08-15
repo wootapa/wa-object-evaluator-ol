@@ -1,15 +1,15 @@
 import Feature from 'ol/Feature';
 import Geometry from 'ol/geom/Geometry';
-import { IBuilderOpts, ThingOrThingGetter } from '../core/wa-contracts';
+import { IEvaluatorOpts, ThingOrThingGetter } from '../core/wa-contracts';
 
 export type FeatureThing = ThingOrThingGetter<Feature | Geometry | Object | string>;
 
-export interface IOlBuilderOpts extends IBuilderOpts {
+export interface IEvaluatorOlOpts extends IEvaluatorOpts {
     projCode: string
 }
 
 export interface IOlOpts {
-    builderOpts: IOlBuilderOpts,
+    evaluatorOpts: IEvaluatorOlOpts,
     geometryName?: string,
     projCode?: string
 }

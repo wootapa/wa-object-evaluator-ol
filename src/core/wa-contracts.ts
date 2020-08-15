@@ -1,4 +1,4 @@
-import { IBuilder } from './wa-builder-core';
+import { IEvaluator } from './wa-evaluator';
 import { Logical } from './wa-logical';
 
 export interface IDictionary<T> {
@@ -15,10 +15,10 @@ export interface IJsonDump {
     isLogical?: boolean;
     isRuntime?: boolean;
     operators?: IJsonDump[];
-    builderOpts?: IBuilderOpts;
+    evaluatorOpts?: IEvaluatorOpts;
 }
 
-export interface IBuilderOpts { }
+export interface IEvaluatorOpts { }
 
 export interface IComparisonOpts {
     isDate?: boolean;
@@ -60,5 +60,5 @@ export type ThingOrThingGetter<T> = T | IThingGetter<T> | IDictionary<T> | objec
 export type Primitive = string | number | boolean | Date;
 export type PrimitiveThing = ThingOrThingGetter<Primitive>;
 export type Operator = IEvaluatable & IJson;
-export type Parent = IBuilder | Logical;
+export type Parent = IEvaluator | Logical;
 export type ClassDict = IDictionary<any>;

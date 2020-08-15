@@ -1,8 +1,8 @@
 import { ProjectionLike } from 'ol/proj';
 import Projection from 'ol/proj/Projection';
-import { BuilderCoreBase } from '../core/wa-builder-core';
 import { ClassDict } from '../core/wa-contracts';
-import { FeatureThing, IDistanceOpts, IFilterOpts, IOlBuilderOpts } from './wa-contracts';
+import { EvaluatorBase } from '../core/wa-evaluator';
+import { FeatureThing, IDistanceOpts, IEvaluatorOlOpts, IFilterOpts } from './wa-contracts';
 import { WAFeature } from './wa-feature';
 import { WAFilter } from './wa-filter';
 import { IOlOperators, OlContains, OlDisjoint, OlDistanceBeyond, OlDistanceWithin, OlIntersects, OlWithin } from './wa-ol';
@@ -10,22 +10,22 @@ import { IOlOperators, OlContains, OlDisjoint, OlDistanceBeyond, OlDistanceWithi
 let DEFAULT_PROJECTION = 'EPSG:3857';
 
 // Holds anything we want operators to know about
-class BuilderOlOpts implements IOlBuilderOpts {
+class EvaluatorOlOpts implements IEvaluatorOlOpts {
     projCode = DEFAULT_PROJECTION;
 }
 
-export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperators {
-    private _opts = new BuilderOlOpts();
+export class EvaluatorOl extends EvaluatorBase<EvaluatorOl> implements IOlOperators {
+    private _opts = new EvaluatorOlOpts();
 
-    protected _getConfiguration(): IOlBuilderOpts {
+    protected _getConfiguration(): IEvaluatorOlOpts {
         return this._opts;
     }
 
-    protected _setConfiguration(config: IOlBuilderOpts): void {
+    protected _setConfiguration(config: IEvaluatorOlOpts): void {
         this._opts = config;
     }
 
-    protected _getBuilder(): BuilderOl {
+    protected _getEvaluator(): EvaluatorOl {
         return this;
     }
 
@@ -41,7 +41,7 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
     }
 
     /**
-     * Sets default projection for all builders.
+     * Sets default projection for all evaluators.
      * Default `EPSG:3857` (Web Mercator)
      *
      * @remarks Projection must be known.
@@ -59,9 +59,9 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
      *
      * @param projection - Projection instance or code
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    projection(projection: ProjectionLike): BuilderOl {
+    projection(projection: ProjectionLike): EvaluatorOl {
         this._opts.projCode = projection instanceof Projection ? projection.getCode() : projection;
         return this;
     }
@@ -88,10 +88,10 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
      *
      * @param value - The featurething to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    intersects(value: FeatureThing): BuilderOl {
-        this._logical.add(new OlIntersects(value, { builderOpts: this._opts }));
+    intersects(value: FeatureThing): EvaluatorOl {
+        this._logical.add(new OlIntersects(value, { evaluatorOpts: this._opts }));
         return this;
     }
 
@@ -100,10 +100,10 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
      *
      * @param value - The featurething to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    disjoint(value: FeatureThing): BuilderOl {
-        this._logical.add(new OlDisjoint(value, { builderOpts: this._opts }));
+    disjoint(value: FeatureThing): EvaluatorOl {
+        this._logical.add(new OlDisjoint(value, { evaluatorOpts: this._opts }));
         return this;
     }
 
@@ -112,10 +112,10 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
      *
      * @param value - The featurething to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    contains(value: FeatureThing): BuilderOl {
-        this._logical.add(new OlContains(value, { builderOpts: this._opts }));
+    contains(value: FeatureThing): EvaluatorOl {
+        this._logical.add(new OlContains(value, { evaluatorOpts: this._opts }));
         return this;
     }
 
@@ -124,10 +124,10 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
      *
      * @param value - The featurething to compare
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    within(value: FeatureThing): BuilderOl {
-        this._logical.add(new OlWithin(value, { builderOpts: this._opts }));
+    within(value: FeatureThing): EvaluatorOl {
+        this._logical.add(new OlWithin(value, { evaluatorOpts: this._opts }));
         return this;
     }
 
@@ -139,10 +139,10 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
      * @param value - The featurething to compare
      * @param distance - Distance in meters
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    distanceWithin(value: FeatureThing, distance: number): BuilderOl {
-        this._logical.add(new OlDistanceWithin(value, { builderOpts: this._opts, distance: distance } as IDistanceOpts));
+    distanceWithin(value: FeatureThing, distance: number): EvaluatorOl {
+        this._logical.add(new OlDistanceWithin(value, { evaluatorOpts: this._opts, distance: distance } as IDistanceOpts));
         return this;
     }
 
@@ -154,10 +154,10 @@ export class BuilderOl extends BuilderCoreBase<BuilderOl> implements IOlOperator
      * @param value - The featurething to compare
      * @param distance - Distance in meters
      *
-     * @returns Builder
+     * @returns Evaluator
      */
-    distanceBeyond(value: FeatureThing, distance: number): BuilderOl {
-        this._logical.add(new OlDistanceBeyond(value, { builderOpts: this._opts, distance: distance } as IDistanceOpts));
+    distanceBeyond(value: FeatureThing, distance: number): EvaluatorOl {
+        this._logical.add(new OlDistanceBeyond(value, { evaluatorOpts: this._opts, distance: distance } as IDistanceOpts));
         return this;
     }
 

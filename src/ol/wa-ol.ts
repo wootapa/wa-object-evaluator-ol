@@ -2,8 +2,8 @@
 import { KeyValue } from '../core/wa-comparison';
 import { IEvaluatable, IJson, IJsonDump, IReport } from '../core/wa-contracts';
 import { Reporter } from '../core/wa-util';
-import { BuilderOl } from './wa-builder-ol';
 import { FeatureThing, IDistanceOpts, IOlOpts } from './wa-contracts';
+import { EvaluatorOl } from './wa-evaluator';
 import { WAFeature } from './wa-feature';
 
 // Base class for all operators
@@ -59,7 +59,7 @@ export abstract class OlBase extends KeyValue implements IEvaluatable, IJson {
         this._reporter.start();
 
         let result = false;
-        const projCode = this._opts.builderOpts.projCode;
+        const projCode = this._opts.evaluatorOpts.projCode;
 
         if (this instanceof OlIntersects) {
             result = this._feature.intersects(evalFeature, projCode);
@@ -87,14 +87,14 @@ export abstract class OlBase extends KeyValue implements IEvaluatable, IJson {
     }
 }
 
-// To be implemented in builder
+// To be implemented in evaluator
 export interface IOlOperators {
-    intersects(value: FeatureThing): BuilderOl,
-    disjoint(value: FeatureThing): BuilderOl,
-    contains(value: FeatureThing): BuilderOl,
-    within(value: FeatureThing): BuilderOl,
-    distanceWithin(value: FeatureThing, distance: number): BuilderOl
-    distanceBeyond(value: FeatureThing, distance: number): BuilderOl
+    intersects(value: FeatureThing): EvaluatorOl,
+    disjoint(value: FeatureThing): EvaluatorOl,
+    contains(value: FeatureThing): EvaluatorOl,
+    within(value: FeatureThing): EvaluatorOl,
+    distanceWithin(value: FeatureThing, distance: number): EvaluatorOl
+    distanceBeyond(value: FeatureThing, distance: number): EvaluatorOl
 }
 
 export class OlIntersects extends OlBase {
