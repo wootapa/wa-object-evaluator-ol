@@ -62,24 +62,24 @@ export abstract class OlBase extends KeyValue implements IEvaluatable, IJson {
         const projCode = this._opts.evaluatorOpts.projCode;
 
         if (this instanceof OlIntersects) {
-            result = this._feature.intersects(evalFeature, projCode);
+            result = this.feature.intersects(evalFeature, projCode);
         }
         else if (this instanceof OlDisjoint) {
-            result = !this._feature.intersects(evalFeature, projCode);
+            result = !this.feature.intersects(evalFeature, projCode);
         }
         else if (this instanceof OlContains) {
             result = evalFeature.contains(this.feature, projCode);
         }
         else if (this instanceof OlWithin) {
-            result = this._feature.contains(evalFeature, projCode);
+            result = this.feature.contains(evalFeature, projCode);
         }
         else if (this instanceof OlDistanceWithin) {
             const opts = this._opts as IDistanceOpts;
-            result = this._feature.dwithin(evalFeature, opts.distance, projCode);
+            result = this.feature.dwithin(evalFeature, opts.distance, projCode);
         }
         else if (this instanceof OlDistanceBeyond) {
             const opts = this._opts as IDistanceOpts;
-            result = !this._feature.dwithin(evalFeature, opts.distance, projCode);
+            result = !this.feature.dwithin(evalFeature, opts.distance, projCode);
         }
 
         this._reporter.stop(result);

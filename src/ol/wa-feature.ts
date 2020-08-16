@@ -215,10 +215,10 @@ export class WAFeature {
             geometries = (this.getGeometry() as MultiPolygon).getPolygons();
         }
         else if (this.isMultiLineString()) {
-            geometries = (this.getGeometry() as MultiLineString).getLineStrings()
+            geometries = (this.getGeometry() as MultiLineString).getLineStrings();
         }
         else if (this.isMultiPoint()) {
-            geometries = (this.getGeometry() as MultiPoint).getPoints()
+            geometries = (this.getGeometry() as MultiPoint).getPoints();
         }
         else {
             geometries = [this.getGeometry()];
@@ -256,7 +256,7 @@ export class WAFeature {
             return this.getGeometry().intersectsCoordinate(feature.getCenter());
         }
         // Turf contains cant understand multigeometries so we map...
-        return this.asTurfArray(projCode).some(a => feature.asTurfArray(projCode).some(b => booleanContains(a, b)));
+        return this.asTurfArray(projCode).some(a => feature.asTurfArray(projCode).every(b => booleanContains(a, b)));
     }
 
     dwithin(feature: WAFeature, distance: number, projCode: string): boolean {
