@@ -85,7 +85,7 @@ export class WAFilter {
                         return `(NOT ${operators.map(walk).join(' AND NOT ')})`
                     }
                 }
-                return '';
+                return '(1=1)';
             }
         };
         return walk(logical);
