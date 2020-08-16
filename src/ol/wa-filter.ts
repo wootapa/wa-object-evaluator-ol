@@ -72,14 +72,20 @@ export class WAFilter {
                 }
             }
             // Logical
-            if (operator instanceof LogicalAnd) {
-                return `(${operator.getOperators().map(walk).join(' AND ')})`
-            }
-            if (operator instanceof LogicalOr) {
-                return `(${operator.getOperators().map(walk).join(' OR ')})`
-            }
-            if (operator instanceof LogicalNot) {
-                return `(NOT ${operator.getOperators().map(walk).join(' AND NOT ')})`
+            if (operator instanceof Logical) {
+                const operators = operator.getOperators();
+                if (operators.length > 0) {
+                    if (operator instanceof LogicalAnd) {
+                        return `(${operators.map(walk).join(' AND ')})`
+                    }
+                    if (operator instanceof LogicalOr) {
+                        return `(${operators.map(walk).join(' OR ')})`
+                    }
+                    if (operator instanceof LogicalNot) {
+                        return `(NOT ${operators.map(walk).join(' AND NOT ')})`
+                    }
+                }
+                return '';
             }
         };
         return walk(logical);
@@ -145,14 +151,20 @@ export class WAFilter {
                 }
             }
             // Logical
-            if (operator instanceof LogicalAnd) {
-                return `<ogc:And>${operator.getOperators().map(walk).join('')}</ogc:And>`;
-            }
-            if (operator instanceof LogicalOr) {
-                return `<ogc:Or>${operator.getOperators().map(walk).join('')}</ogc:Or>`;
-            }
-            if (operator instanceof LogicalNot) {
-                return `<ogc:Not>${operator.getOperators().map(walk).join('')}</ogc:Not>`;
+            if (operator instanceof Logical) {
+                const operators = operator.getOperators();
+                if (operators.length > 0) {
+                    if (operator instanceof LogicalAnd) {
+                        return `<ogc:And>${operators.map(walk).join('')}</ogc:And>`;
+                    }
+                    if (operator instanceof LogicalOr) {
+                        return `<ogc:Or>${operators.map(walk).join('')}</ogc:Or>`;
+                    }
+                    if (operator instanceof LogicalNot) {
+                        return `<ogc:Not>${operators.map(walk).join('')}</ogc:Not>`;
+                    }
+                }
+                return '';
             }
         };
         return `<ogc:Filter xmlns:gml="http://www.opengis.net/gml" xmlns:ogc="http://www.opengis.net/ogc">${walk(logical)}</ogc:Filter>`;

@@ -36,13 +36,18 @@ An operator value = valid geometry. See below for options.
 
 ### Other
 * `projection(projection)` - Overrides the default projection for current builder.
-* `asOgcCql({ geometryName? })` - Outputs as OGC CQL.
-* `asOgcXML({ geometryName? })` - Outputs as OGC XML.
+* `asOgcCql(opts?)` - Outputs as OGC CQL.
+* `asOgcXML(opts?)` - Outputs as OGC XML.
 
-By default the CQL/XML serializers outputs the geometryname as `geometry` unless you passed an ol/Feature with a set [geometryName](https://openlayers.org/en/latest/apidoc/module-ol_Feature-Feature.html#setGeometryName) to the operator(s). Providing a ```geometryName``` will override this behavior. Ex ```oe.asOgcCql({ geometryName: 'the_geom'})```.
+CQL/XML serializers take an optional object:
+```javascript
+geometryName?,  // Serializes operators with a different geometryName. Ex 'the_geom'.
+projection?,    // Serializes operators with a different projection. Ex 'EPSG:4326'.
+decimals?       // Rounds geometry decimal precision on serialized operators. Ex, 5.
+```
 
 ## What is a geometry?
-- ol/Feature (can carry attributes)
+- ol/Feature (can carry attributes and respects geometryName)
 - ol/Geometry
 - An object with a valid ol/Geometry (ex ```feature.getProperties()```) (can carry attributes)
 - WKT
@@ -85,8 +90,9 @@ const wells = features.filter(oe.evaluate);
 ```
 ...or output as CQL/XML and pass it to your OGC compliant server.
 ```javascript
-const cql = oe.asOgcCql();
-const xml = oe.asOgcXml();
+const opts = { geometryName: 'geom', projection: 'EPSG:3006', decimals: 0 }; // <- Optional
+const cql = oe.asOgcCql(opts);
+const xml = oe.asOgcXml(opts);
 ```
 
 ## Pro ol-tip!
