@@ -10,6 +10,9 @@ import Circle from 'ol/geom/Circle';
 import Geometry from 'ol/geom/Geometry';
 import GeometryLayout from 'ol/geom/GeometryLayout';
 import LineString from 'ol/geom/LineString';
+import MultiLineString from 'ol/geom/MultiLineString';
+import MultiPoint from 'ol/geom/MultiPoint';
+import MultiPolygon from 'ol/geom/MultiPolygon';
 import Point from 'ol/geom/Point';
 import Polygon, { fromCircle, fromExtent } from 'ol/geom/Polygon';
 import { ProjectionLike } from 'ol/proj';
@@ -92,6 +95,10 @@ export class WAFeature {
         throw new Error('Unsupported geometry type');
     }
 
+    static transform(geometry: Geometry, sourceProjection: ProjectionLike, targetProjection: ProjectionLike): Geometry {
+        return geometry.clone().transform(sourceProjection, targetProjection);
+    }
+
     assertValid(): WAFeature {
         if (!(this.getGeometry() instanceof Geometry)) {
             throw new Error('Not a geometry');
@@ -107,7 +114,7 @@ export class WAFeature {
     }
 
     getGeometryTransformed(sourceProjection: ProjectionLike, targetProjection: ProjectionLike): Geometry {
-        return this.getGeometry().clone().transform(sourceProjection, targetProjection);
+        return WAFeature.transform(this.getGeometry(), sourceProjection, targetProjection);
     }
 
     getGeometryName(): string {
@@ -151,12 +158,24 @@ export class WAFeature {
         return this.getGeometry().getType() === 'Polygon';
     }
 
+    isMultiPolygon(): boolean {
+        return this.getGeometry().getType() === 'MultiPolygon';
+    }
+
     isLineString(): boolean {
         return this.getGeometry().getType() === 'LineString';
     }
 
+    isMultiLineString(): boolean {
+        return this.getGeometry().getType() === 'MultiLineString';
+    }
+
     isPoint(): boolean {
         return this.getGeometry().getType() === 'Point';
+    }
+
+    isMultiPoint(): boolean {
+        return this.getGeometry().getType() === 'MultiPoint';
     }
 
     isExtent(): boolean {
@@ -189,6 +208,25 @@ export class WAFeature {
         return formatJson.writeGeometryObject(this.getGeometryTransformed(projCode, WAFeature.WGS84_CODE)) as any;
     }
 
+    asTurfArray(projCode: string): any[] {
+        let geometries: any[];
+
+        if (this.isMultiPolygon()) {
+            geometries = (this.getGeometry() as MultiPolygon).getPolygons();
+        }
+        else if (this.isMultiLineString()) {
+            geometries = (this.getGeometry() as MultiLineString).getLineStrings()
+        }
+        else if (this.isMultiPoint()) {
+            geometries = (this.getGeometry() as MultiPoint).getPoints()
+        }
+        else {
+            geometries = [this.getGeometry()];
+        }
+
+        return geometries.map(geometry => formatJson.writeGeometryObject(WAFeature.transform(geometry, projCode, WAFeature.WGS84_CODE)));
+    }
+
     asGml(decimals?: number, opts?: ITransformOpts): string {
         const geom = opts
             ? this.getGeometryTransformed(opts.sourceProj, opts.targetProj)
@@ -210,7 +248,6 @@ export class WAFeature {
         if (feature.isExtent()) {
             return feature.intersects(this, projCode);
         }
-
         return booleanIntersects(this.asTurf(projCode), feature.asTurf(projCode));
     }
 
@@ -218,7 +255,8 @@ export class WAFeature {
         if (feature.isPoint()) {
             return this.getGeometry().intersectsCoordinate(feature.getCenter());
         }
-        return booleanContains(this.asTurf(projCode), feature.asTurf(projCode));
+        // Turf contains cant understand multigeometries so we map...
+        return this.asTurfArray(projCode).every(a => feature.asTurfArray(projCode).every(b => booleanContains(a, b)));
     }
 
     dwithin(feature: WAFeature, distance: number, projCode: string): boolean {
