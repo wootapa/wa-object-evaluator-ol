@@ -12,9 +12,10 @@ import GeometryLayout from 'ol/geom/GeometryLayout';
 import LineString from 'ol/geom/LineString';
 import Point from 'ol/geom/Point';
 import Polygon, { fromCircle, fromExtent } from 'ol/geom/Polygon';
+import { ProjectionLike } from 'ol/proj';
 import { getDistance } from 'ol/sphere';
 import { IDictionary } from '../core/wa-contracts';
-import { FeatureThing } from './wa-contracts';
+import { FeatureThing, ITransformOpts } from './wa-contracts';
 
 const formatWkt = new WKT();
 const formatJson = new GeoJSON();
@@ -26,6 +27,7 @@ export class WAFeature {
     static readonly GEOMETRYNAME_DEFAULT = 'geometry';
     static readonly GEOMETRYNAME_HINT = 'waoe_geometryname';
     static readonly WGS84_RADIUS = 6371008.8;
+    static readonly WGS84_CODE = 'EPSG:4326';
 
     static factory = (obj: FeatureThing): WAFeature => {
         if (obj instanceof WAFeature) {
@@ -104,9 +106,8 @@ export class WAFeature {
         return this._feature.getGeometry();
     }
 
-    getGeometryLonLat(sourceProjection: string): Geometry {
-        const geom = this.isPoint() ? fromExtent(this.getExtent()) : this.getGeometry().clone();
-        return geom.transform(sourceProjection, 'EPSG:4326');
+    getGeometryTransformed(sourceProjection: ProjectionLike, targetProjection: ProjectionLike): Geometry {
+        return this.getGeometry().clone().transform(sourceProjection, targetProjection);
     }
 
     getGeometryName(): string {
@@ -173,8 +174,11 @@ export class WAFeature {
         return poly.getArea() === polyExtent.getArea();
     }
 
-    asWkt(): string {
-        return formatWkt.writeGeometry(this.getGeometry());
+    asWkt(decimals?: number, opts?: ITransformOpts): string {
+        const geom = opts
+            ? this.getGeometryTransformed(opts.sourceProj, opts.targetProj)
+            : this.getGeometry();
+        return formatWkt.writeGeometry(geom, { decimals: decimals });
     }
 
     asGeoJson(): string {
@@ -182,11 +186,14 @@ export class WAFeature {
     }
 
     asTurf(projCode: string): any {
-        return formatJson.writeGeometryObject(this.getGeometryLonLat(projCode)) as any;
+        return formatJson.writeGeometryObject(this.getGeometryTransformed(projCode, WAFeature.WGS84_CODE)) as any;
     }
 
-    asGml(): string {
-        return formatGml.writeGeometry(this.getGeometry());
+    asGml(decimals?: number, opts?: ITransformOpts): string {
+        const geom = opts
+            ? this.getGeometryTransformed(opts.sourceProj, opts.targetProj)
+            : this.getGeometry();
+        return formatGml.writeGeometry(geom, { decimals: decimals });
     }
 
     intersects(feature: WAFeature, projCode: string): boolean {
@@ -215,8 +222,8 @@ export class WAFeature {
     }
 
     dwithin(feature: WAFeature, distance: number, projCode: string): boolean {
-        const a = getCenter(this.getGeometryLonLat(projCode).getExtent());
-        const b = getCenter(feature.getGeometryLonLat(projCode).getExtent());
+        const a = getCenter(this.getGeometryTransformed(projCode, WAFeature.WGS84_CODE).getExtent());
+        const b = getCenter(feature.getGeometryTransformed(projCode, WAFeature.WGS84_CODE).getExtent());
         return getDistance(a, b, WAFeature.WGS84_RADIUS) <= distance;
     }
 }
