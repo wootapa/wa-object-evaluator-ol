@@ -256,7 +256,7 @@ export class WAFeature {
             return this.getGeometry().intersectsCoordinate(feature.getCenter());
         }
         // Turf contains cant understand multigeometries so we map...
-        return this.asTurfArray(projCode).every(a => feature.asTurfArray(projCode).every(b => booleanContains(a, b)));
+        return this.asTurfArray(projCode).some(a => feature.asTurfArray(projCode).some(b => booleanContains(a, b)));
     }
 
     dwithin(feature: WAFeature, distance: number, projCode: string): boolean {
