@@ -15,13 +15,16 @@ export interface IOlOpts {
 }
 
 export interface IDistanceOpts extends IOlOpts {
-    distance: number
+    distance: number,
+    greatCircle: boolean
 }
 
 export interface IFilterOpts {
     geometryName?: string,
     projection?: ProjectionLike,
-    decimals?: number
+    decimals?: number,
+    // Will convert meters to projection units when using dwithin/beyond
+    useProjectionUnitForDistance?: boolean
 }
 
 export interface ITransformOpts {

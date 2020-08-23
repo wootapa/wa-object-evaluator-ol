@@ -1,4 +1,3 @@
-import booleanContains from '@turf/boolean-contains';
 import booleanIntersects from '@turf/boolean-intersects';
 import { Feature } from 'ol';
 import { Coordinate } from 'ol/coordinate';
@@ -29,7 +28,6 @@ export class WAFeature {
 
     static readonly GEOMETRYNAME_DEFAULT = 'geometry';
     static readonly GEOMETRYNAME_HINT = 'waoe_geometryname';
-    static readonly WGS84_RADIUS = 6371008.8;
     static readonly WGS84_CODE = 'EPSG:4326';
 
     static factory = (obj: FeatureThing): WAFeature => {
@@ -99,18 +97,47 @@ export class WAFeature {
         return geometry.clone().transform(sourceProjection, targetProjection);
     }
 
-    assertValid(): WAFeature {
-        if (!(this.getGeometry() instanceof Geometry)) {
-            throw new Error('Not a geometry');
+    static isSquare(poly: Geometry): boolean {
+        if (!(poly instanceof Polygon)) {
+            return false;
         }
-        if (this.isCircle()) {
-            this._feature.setGeometry(fromCircle(this.getGeometry() as Circle));
+
+        const polyExtent = fromExtent(poly.getExtent());
+
+        if (poly.getFlatCoordinates().length !== polyExtent.getFlatCoordinates().length) {
+            return false;
+        }
+        // Could in theory be topologically different and produce the same area
+        return poly.getArea() === polyExtent.getArea();
+    }
+
+    assertValid(): WAFeature {
+        const geom = this.getGeometry();
+        if (!(geom instanceof Geometry)) {
+            throw new Error('Not a valid geometry');
+        }
+        if (geom instanceof Circle) {
+            this._feature.setGeometry(fromCircle(geom));
         }
         return this;
     }
 
     getGeometry(): Geometry {
         return this._feature.getGeometry();
+    }
+
+    getGeometryAsArray(): Geometry[] {
+        const geom = this._feature.getGeometry();
+        if (geom instanceof MultiPoint) {
+            return geom.getPoints();
+        }
+        if (geom instanceof MultiLineString) {
+            return geom.getLineStrings();
+        }
+        if (geom instanceof MultiPolygon) {
+            return geom.getPolygons();
+        }
+        return [geom];
     }
 
     getGeometryTransformed(sourceProjection: ProjectionLike, targetProjection: ProjectionLike): Geometry {
@@ -146,53 +173,6 @@ export class WAFeature {
         return this._feature;
     }
 
-    isMulti(): boolean {
-        return this.getGeometry().getType().includes('Multi');
-    }
-
-    isCircle(): boolean {
-        return this.getGeometry().getType() === 'Circle';
-    }
-
-    isPolygon(): boolean {
-        return this.getGeometry().getType() === 'Polygon';
-    }
-
-    isMultiPolygon(): boolean {
-        return this.getGeometry().getType() === 'MultiPolygon';
-    }
-
-    isLineString(): boolean {
-        return this.getGeometry().getType() === 'LineString';
-    }
-
-    isMultiLineString(): boolean {
-        return this.getGeometry().getType() === 'MultiLineString';
-    }
-
-    isPoint(): boolean {
-        return this.getGeometry().getType() === 'Point';
-    }
-
-    isMultiPoint(): boolean {
-        return this.getGeometry().getType() === 'MultiPoint';
-    }
-
-    isExtent(): boolean {
-        if (!this.isPolygon()) {
-            return false;
-        }
-
-        const poly = (this.getGeometry() as Polygon);
-        const polyExtent = fromExtent(poly.getExtent());
-
-        if (poly.getFlatCoordinates().length !== polyExtent.getFlatCoordinates().length) {
-            return false;
-        }
-        // Could in theory be topologically different and produce the same area
-        return poly.getArea() === polyExtent.getArea();
-    }
-
     asWkt(decimals?: number, opts?: ITransformOpts): string {
         const geom = opts
             ? this.getGeometryTransformed(opts.sourceProj, opts.targetProj)
@@ -200,31 +180,15 @@ export class WAFeature {
         return formatWkt.writeGeometry(geom, { decimals: decimals });
     }
 
-    asGeoJson(): string {
-        return formatJson.writeGeometry(this.getGeometry());
+    asGeoJson(decimals?: number, opts?: ITransformOpts): string {
+        const geom = opts
+            ? this.getGeometryTransformed(opts.sourceProj, opts.targetProj)
+            : this.getGeometry();
+        return formatJson.writeGeometry(geom, { decimals: decimals });
     }
 
     asTurf(projCode: string): any {
         return formatJson.writeGeometryObject(this.getGeometryTransformed(projCode, WAFeature.WGS84_CODE)) as any;
-    }
-
-    asTurfArray(projCode: string): any[] {
-        let geometries: any[];
-
-        if (this.isMultiPolygon()) {
-            geometries = (this.getGeometry() as MultiPolygon).getPolygons();
-        }
-        else if (this.isMultiLineString()) {
-            geometries = (this.getGeometry() as MultiLineString).getLineStrings();
-        }
-        else if (this.isMultiPoint()) {
-            geometries = (this.getGeometry() as MultiPoint).getPoints();
-        }
-        else {
-            geometries = [this.getGeometry()];
-        }
-
-        return geometries.map(geometry => formatJson.writeGeometryObject(WAFeature.transform(geometry, projCode, WAFeature.WGS84_CODE)));
     }
 
     asGml(decimals?: number, opts?: ITransformOpts): string {
@@ -235,33 +199,68 @@ export class WAFeature {
     }
 
     intersects(feature: WAFeature, projCode: string): boolean {
-        if (this.isPoint()) {
-            return feature.getGeometry().intersectsCoordinate(this.getCenter());
-        }
-        if (feature.isPoint()) {
-            return feature.intersects(this, projCode);
-        }
+        const thisGeoms = this.getGeometryAsArray();
+        const featGeoms = feature.getGeometryAsArray();
 
-        if (this.isExtent()) {
-            return feature.getGeometry().intersectsExtent(this.getExtent());
-        }
-        if (feature.isExtent()) {
-            return feature.intersects(this, projCode);
-        }
-        return booleanIntersects(this.asTurf(projCode), feature.asTurf(projCode));
+        return thisGeoms.some(thisGeom => {
+            return featGeoms.some(featGeom => {
+                if (thisGeom instanceof Point) {
+                    return featGeom.intersectsCoordinate(thisGeom.getCoordinates());
+                }
+                if (featGeom instanceof Point) {
+                    return thisGeom.intersectsCoordinate(featGeom.getCoordinates());
+                }
+
+                if (WAFeature.isSquare(thisGeom)) {
+                    return featGeom.intersectsExtent(thisGeom.getExtent());
+                }
+                if (WAFeature.isSquare(featGeom)) {
+                    return thisGeom.intersectsExtent(featGeom.getExtent());
+                }
+                // Leave it to turf if extent hits
+                return thisGeom.intersectsExtent(featGeom.getExtent())
+                    && booleanIntersects(WAFeature.factory(thisGeom).asTurf(projCode), WAFeature.factory(featGeom).asTurf(projCode));
+            });
+        });
     }
 
-    contains(feature: WAFeature, projCode: string): boolean {
-        if (feature.isPoint()) {
-            return this.getGeometry().intersectsCoordinate(feature.getCenter());
-        }
-        // Turf contains cant understand multigeometries so we map...
-        return this.asTurfArray(projCode).some(a => feature.asTurfArray(projCode).every(b => booleanContains(a, b)));
+    contains(feature: WAFeature): boolean {
+        const thisGeoms = this.getGeometryAsArray();
+        const featGeoms = feature.getGeometryAsArray();
+
+        return thisGeoms.some(thisGeom => {
+            return featGeoms.every(featGeom => {
+                if (featGeom instanceof Point) {
+                    return thisGeom.intersectsCoordinate(featGeom.getCoordinates());
+                }
+                if (featGeom instanceof LineString) {
+                    return featGeom.getCoordinates().every(coord => thisGeom.intersectsCoordinate(coord));
+                }
+                return (featGeom as Polygon).getLinearRing(0).getCoordinates().every(coord => thisGeom.intersectsCoordinate(coord));
+            });
+        });
     }
 
-    dwithin(feature: WAFeature, distance: number, projCode: string): boolean {
-        const a = getCenter(this.getGeometryTransformed(projCode, WAFeature.WGS84_CODE).getExtent());
-        const b = getCenter(feature.getGeometryTransformed(projCode, WAFeature.WGS84_CODE).getExtent());
-        return getDistance(a, b, WAFeature.WGS84_RADIUS) <= distance;
+    dwithin(feature: WAFeature, distance: number, greatCircle = true, projCode: string): boolean {
+        let thisGeom = this.getGeometry();
+        let featGeom = feature.getGeometry();
+
+        if (thisGeom instanceof Point && featGeom.intersectsCoordinate(thisGeom.getCoordinates())) {
+            return true;
+        }
+        if (featGeom instanceof Point && thisGeom.intersectsCoordinate(featGeom.getCoordinates())) {
+            return true;
+        }
+
+        if (!greatCircle) {
+            const b = featGeom.getClosestPoint(getCenter(thisGeom.getExtent()));
+            const a = thisGeom.getClosestPoint(b);
+            return new LineString([a, b]).getLength() <= distance || this.intersects(feature, projCode);
+        }
+        thisGeom = this.getGeometryTransformed(projCode, WAFeature.WGS84_CODE);
+        featGeom = feature.getGeometryTransformed(projCode, WAFeature.WGS84_CODE);
+        const b = featGeom.getClosestPoint(getCenter(thisGeom.getExtent()));
+        const a = thisGeom.getClosestPoint(b);
+        return getDistance(a, b) <= distance || this.intersects(feature, projCode);
     }
 }

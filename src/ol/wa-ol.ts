@@ -68,18 +68,18 @@ export abstract class OlBase extends KeyValue implements IEvaluatable, IJson {
             result = !this.feature.intersects(evalFeature, projCode);
         }
         else if (this instanceof OlContains) {
-            result = evalFeature.contains(this.feature, projCode);
+            result = evalFeature.contains(this.feature);
         }
         else if (this instanceof OlWithin) {
-            result = this.feature.contains(evalFeature, projCode);
+            result = this.feature.contains(evalFeature);
         }
         else if (this instanceof OlDistanceWithin) {
             const opts = this._opts as IDistanceOpts;
-            result = this.feature.dwithin(evalFeature, opts.distance, projCode);
+            result = this.feature.dwithin(evalFeature, opts.distance, opts.greatCircle, projCode);
         }
         else if (this instanceof OlDistanceBeyond) {
             const opts = this._opts as IDistanceOpts;
-            result = !this.feature.dwithin(evalFeature, opts.distance, projCode);
+            result = !this.feature.dwithin(evalFeature, opts.distance, opts.greatCircle, projCode);
         }
 
         this._reporter.stop(result);
@@ -113,9 +113,15 @@ export class OlWithin extends OlBase {
     static alias = 'within';
 }
 
-export class OlDistanceWithin extends OlBase {
+export abstract class OlDistanceBase extends OlBase {
+    get opts(): IDistanceOpts {
+        return this._opts as IDistanceOpts;
+    }
+}
+
+export class OlDistanceWithin extends OlDistanceBase {
     static alias = 'dwithin';
 }
-export class OlDistanceBeyond extends OlBase {
+export class OlDistanceBeyond extends OlDistanceBase {
     static alias = 'beyond';
 }

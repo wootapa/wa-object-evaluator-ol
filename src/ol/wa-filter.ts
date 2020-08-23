@@ -1,13 +1,32 @@
+import { getCenter } from 'ol/extent';
+import Geometry from 'ol/geom/Geometry';
+import { get, ProjectionLike } from 'ol/proj';
+import Units from 'ol/proj/Units';
 import { Comparison, ComparisonEquals, ComparisonGreaterThan, ComparisonGreaterThanEquals, ComparisonIsNull, ComparisonLessThan, ComparisonLessThanEquals, ComparisonLike } from '../core/wa-comparison';
 import { Operator } from '../core/wa-contracts';
 import { Logical, LogicalAnd, LogicalNot, LogicalOr } from '../core/wa-logical';
-import { IDistanceOpts, IFilterOpts } from './wa-contracts';
-import { OlBase, OlContains, OlDisjoint, OlDistanceBeyond, OlDistanceWithin, OlIntersects, OlWithin } from './wa-ol';
+import { IFilterOpts } from './wa-contracts';
+import { WAFeature } from './wa-feature';
+import { OlBase, OlContains, OlDisjoint, OlDistanceBase, OlDistanceBeyond, OlDistanceWithin, OlIntersects, OlWithin } from './wa-ol';
 
 export class WAFilter {
 
     private constructor() {
         /* Empty */
+    }
+
+    static metersToUnit = (geom: Geometry, sourceProj: ProjectionLike, targetProj: ProjectionLike, meters: number): number => {
+        const proj = get(targetProj);
+        switch (proj.getUnits()) {
+            case Units.DEGREES: {
+                // https://stackoverflow.com/a/25237446
+                const latlon = getCenter(WAFeature.transform(geom, sourceProj, proj).getExtent());
+                return meters / (proj.getMetersPerUnit() * Math.cos(latlon[1] * (Math.PI / 180)));
+            }
+            default: {
+                return meters / proj.getMetersPerUnit();
+            }
+        }
     }
 
     static asOgcCql = (logical: Logical, opts?: IFilterOpts): string => {
@@ -31,13 +50,26 @@ export class WAFilter {
                 if (operator instanceof OlWithin) {
                     return `WITHIN(${property}, ${value})`;
                 }
-                if (operator instanceof OlDistanceWithin) {
-                    const opts = operator.opts as IDistanceOpts;
-                    return `DWITHIN(${property}, ${value}, ${opts.distance}, m)`;
-                }
-                if (operator instanceof OlDistanceBeyond) {
-                    const opts = operator.opts as IDistanceOpts;
-                    return `BEYOND(${property}, ${value}, ${opts.distance}, m)`;
+                if (operator instanceof OlDistanceBase) {
+                    let distance = operator.opts.distance;
+
+                    /*
+                        Geoserver implements the interface but ignores the provided units
+                        Here we transform meters to the unit of the target projection
+                    */
+                    if (opts?.useProjectionUnitForDistance) {
+                        const sourceProj = operator.opts.evaluatorOpts.projCode;
+                        const targetProj = opts?.projection ?? sourceProj;
+                        const geom = operator.feature.getGeometry();
+                        distance = WAFilter.metersToUnit(geom, sourceProj, targetProj, distance);
+                    }
+
+                    if (operator instanceof OlDistanceWithin) {
+                        return `DWITHIN(${property}, ${value}, ${distance}, meters)`;
+                    }
+                    if (operator instanceof OlDistanceBeyond) {
+                        return `BEYOND(${property}, ${value}, ${distance}, meters)`;
+                    }
                 }
             }
             // Comparison
@@ -112,15 +144,28 @@ export class WAFilter {
                 if (operator instanceof OlWithin) {
                     return `<ogc:Within>${property}${value}</ogc:Within>`;
                 }
-                if (operator instanceof OlDistanceWithin) {
-                    const opts = operator.opts as IDistanceOpts;
-                    const distance = `<Distance units="m">${opts.distance}</Distance>`;
-                    return `<ogc:DWithin>${property}${value}${distance}</ogc:DWithin>`;
-                }
-                if (operator instanceof OlDistanceBeyond) {
-                    const opts = operator.opts as IDistanceOpts;
-                    const distance = `<Distance units="m">${opts.distance}</Distance>`;
-                    return `<ogc:Beyond>${property}${value}${distance}</ogc:Beyond>`;
+                if (operator instanceof OlDistanceBase) {
+                    let distance = operator.opts.distance;
+
+                    /*
+                        Geoserver implements the interface but ignores the provided units
+                        Here we transform meters to the unit of the target projection
+                    */
+                    if (opts?.useProjectionUnitForDistance) {
+                        const sourceProj = operator.opts.evaluatorOpts.projCode;
+                        const targetProj = opts?.projection ?? sourceProj;
+                        const geom = operator.feature.getGeometry();
+                        distance = WAFilter.metersToUnit(geom, sourceProj, targetProj, distance);
+                    }
+
+                    const distanceTag = `<Distance units="meter">${distance}</Distance>`;
+
+                    if (operator instanceof OlDistanceWithin) {
+                        return `<ogc:DWithin>${property}${value}${distanceTag}</ogc:DWithin>`;
+                    }
+                    if (operator instanceof OlDistanceBeyond) {
+                        return `<ogc:Beyond>${property}${value}${distanceTag}</ogc:Beyond>`;
+                    }
                 }
             }
             // Comparison

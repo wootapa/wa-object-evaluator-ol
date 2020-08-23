@@ -31,8 +31,8 @@ An operator value = valid geometry. See below for options.
 * `disjoint(value)` - True when object do not intersects value.
 * `contains(value)` - True when object completely contains value.
 * `within(value)` - True when object is completely within value.
-* `distanceWithin(value, distance)` -  True when object is no more than specified distance (in meters) from value. Requires a correct projection.
-* `distanceBeyond(value, distance)` -  True when object is more than specified distance (in meters) from value. Requires a correct projection.
+* `distanceWithin(value, distance, greatCircle?)` -  True when object is no more than specified distance (in meters) from value. Requires a correct projection. Uses greatCircle by default.
+* `distanceBeyond(value, distance, greatCircle?)` -  True when object is more than specified distance (in meters) from value. Requires a correct projection. Uses greatCircle by default.
 
 ### Other
 * `projection(projection)` - Overrides the default projection for current builder.
@@ -41,9 +41,10 @@ An operator value = valid geometry. See below for options.
 
 CQL/XML serializers take an optional object:
 ```javascript
-geometryName?,  // Serializes operators with a different geometryName. Ex 'the_geom'.
-projection?,    // Serializes operators with a different projection. Ex 'EPSG:4326'.
-decimals?       // Rounds geometry decimal precision on serialized operators. Ex, 5.
+geometryName?, // Serializes operators with a different geometryName. Ex 'the_geom'.
+projection?, // Serializes operators with a different projection. Ex 'EPSG:4326'.
+decimals? // Rounds geometry decimal precision on serialized operators. Ex, 5.
+useProjectionUnitForDistance? // Some backends ignores the unit part of dwithin/beyond filters. This converts meters to the unit of the projection.
 ```
 
 ## What is a geometry?

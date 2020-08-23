@@ -138,11 +138,13 @@ export class EvaluatorOl extends EvaluatorBase<EvaluatorOl> implements IOlOperat
      *
      * @param value - The featurething to compare
      * @param distance - Distance in meters
+     * @param distance - Distance in meters
+     * @param greatCircle - Optional. Calculate using great-circle distance.
      *
      * @returns Evaluator
      */
-    distanceWithin(value: FeatureThing, distance: number): EvaluatorOl {
-        this._logical.add(new OlDistanceWithin(value, { evaluatorOpts: this._opts, distance: distance } as IDistanceOpts));
+    distanceWithin(value: FeatureThing, distance: number, greatCircle?: boolean): EvaluatorOl {
+        this._logical.add(new OlDistanceWithin(value, { evaluatorOpts: this._opts, greatCircle: greatCircle, distance: distance } as IDistanceOpts));
         return this;
     }
 
@@ -153,11 +155,12 @@ export class EvaluatorOl extends EvaluatorBase<EvaluatorOl> implements IOlOperat
      *
      * @param value - The featurething to compare
      * @param distance - Distance in meters
+     * @param greatCircle - Optional. Calculate using great-circle distance.
      *
      * @returns Evaluator
      */
-    distanceBeyond(value: FeatureThing, distance: number): EvaluatorOl {
-        this._logical.add(new OlDistanceBeyond(value, { evaluatorOpts: this._opts, distance: distance } as IDistanceOpts));
+    distanceBeyond(value: FeatureThing, distance: number, greatCircle?: boolean): EvaluatorOl {
+        this._logical.add(new OlDistanceBeyond(value, { evaluatorOpts: this._opts, greatCircle: greatCircle, distance: distance } as IDistanceOpts));
         return this;
     }
 
