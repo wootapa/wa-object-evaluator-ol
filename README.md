@@ -3,7 +3,7 @@ Building code for webgis applications that needs feature-filtering on both clien
 
 This library extends https://github.com/wootapa/wa-object-evaluator with spatial operators and is intended to be used with Openlayers 6+.
 
-[Demo](https://i5u5c.csb.app/)
+See [Demo](https://wootapa.github.io/wa-object-evaluator-ol-demo/) with WFS/WMS side by side.
 
 ## Installation
 
