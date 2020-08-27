@@ -29,7 +29,7 @@ export default [
         ],
         output: [
             {
-                file: pkg.browser, format: 'umd', sourcemap: true, banner: banner, interop: 'auto', name: 'waoe.ol',
+                file: pkg.main, format: 'umd', sourcemap: true, banner: banner, interop: 'auto', name: 'waoe.ol',
                 globals: {
                     'ol': 'ol',
                     'ol/proj': 'ol.proj',
